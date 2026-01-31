@@ -103,6 +103,11 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         <div className="schedule-type-badge" data-type={schedule.type}>
           {schedule.type}
         </div>
+        {schedule.difficulty && (
+          <div className="schedule-difficulty-badge" data-difficulty={schedule.difficulty}>
+            {schedule.difficulty}
+          </div>
+        )}
         <div className="schedule-date-time">
           <span className="date-label">{formatDateLabel()}</span>
           <span className="time">{schedule.time}</span>
