@@ -3,9 +3,6 @@ import {
   push,
   set,
   get,
-  query,
-  orderByChild,
-  equalTo,
 } from 'firebase/database';
 import { database } from '../config/firebase';
 import type { UserAccount } from '../types';
@@ -23,6 +20,67 @@ const generateUserCode = (): string => {
   return code;
 };
 
+// 모든 사용자 조회
+export const getAllUsers = async (): Promise<UserAccount[]> => {
+  try {
+    const usersRef = ref(database, USERS_REF);
+    const snapshot = await get(usersRef);
+
+    if (!snapshot.exists()) {
+      return [];
+    }
+
+    const users: UserAccount[] = [];
+    snapshot.forEach((child) => {
+      users.push(child.val() as UserAccount);
+    });
+
+    return users.sort((a, b) => b.createdAt - a.createdAt);
+  } catch (error) {
+    console.error('getAllUsers error:', error);
+    return [];
+  }
+};
+
+// 코드로 사용자 조회
+export const getUserByCode = async (code: string): Promise<UserAccount | null> => {
+  try {
+    const users = await getAllUsers();
+    return users.find((u) => u.code.toUpperCase() === code.toUpperCase()) || null;
+  } catch (error) {
+    console.error('getUserByCode error:', error);
+    return null;
+  }
+};
+
+// ID로 사용자 조회
+export const getUserById = async (id: string): Promise<UserAccount | null> => {
+  try {
+    const userRef = ref(database, `${USERS_REF}/${id}`);
+    const snapshot = await get(userRef);
+
+    if (!snapshot.exists()) {
+      return null;
+    }
+
+    return snapshot.val() as UserAccount;
+  } catch (error) {
+    console.error('getUserById error:', error);
+    return null;
+  }
+};
+
+// 관리자 계정 조회
+export const getAdminUser = async (): Promise<UserAccount | null> => {
+  try {
+    const users = await getAllUsers();
+    return users.find((u) => u.role === 'admin') || null;
+  } catch (error) {
+    console.error('getAdminUser error:', error);
+    return null;
+  }
+};
+
 // 사용자 생성
 export const createUser = async (
   nickname: string,
@@ -31,21 +89,27 @@ export const createUser = async (
   const usersRef = ref(database, USERS_REF);
   const newUserRef = push(usersRef);
 
-  let code: string;
-  let isUnique = false;
+  let code: string = '';
+  let attempts = 0;
+  const maxAttempts = 10;
 
   // 고유한 코드 생성
-  while (!isUnique) {
+  while (attempts < maxAttempts) {
     code = generateUserCode();
     const existingUser = await getUserByCode(code);
     if (!existingUser) {
-      isUnique = true;
+      break;
     }
+    attempts++;
+  }
+
+  if (!code) {
+    throw new Error('코드 생성에 실패했습니다.');
   }
 
   const newUser: UserAccount = {
     id: newUserRef.key!,
-    code: code!,
+    code: code,
     nickname,
     role: isAdmin ? 'admin' : 'user',
     createdAt: Date.now(),
@@ -53,36 +117,6 @@ export const createUser = async (
 
   await set(newUserRef, newUser);
   return newUser;
-};
-
-// 코드로 사용자 조회
-export const getUserByCode = async (code: string): Promise<UserAccount | null> => {
-  const usersRef = ref(database, USERS_REF);
-  const userQuery = query(usersRef, orderByChild('code'), equalTo(code.toUpperCase()));
-  const snapshot = await get(userQuery);
-
-  if (!snapshot.exists()) {
-    return null;
-  }
-
-  let user: UserAccount | null = null;
-  snapshot.forEach((child) => {
-    user = child.val() as UserAccount;
-  });
-
-  return user;
-};
-
-// ID로 사용자 조회
-export const getUserById = async (id: string): Promise<UserAccount | null> => {
-  const userRef = ref(database, `${USERS_REF}/${id}`);
-  const snapshot = await get(userRef);
-
-  if (!snapshot.exists()) {
-    return null;
-  }
-
-  return snapshot.val() as UserAccount;
 };
 
 // 코드로 로그인
@@ -99,41 +133,6 @@ export const loginWithCode = async (code: string): Promise<UserAccount | null> =
   }
 
   return await getUserByCode(code);
-};
-
-// 관리자 계정 조회
-export const getAdminUser = async (): Promise<UserAccount | null> => {
-  const usersRef = ref(database, USERS_REF);
-  const adminQuery = query(usersRef, orderByChild('role'), equalTo('admin'));
-  const snapshot = await get(adminQuery);
-
-  if (!snapshot.exists()) {
-    return null;
-  }
-
-  let admin: UserAccount | null = null;
-  snapshot.forEach((child) => {
-    admin = child.val() as UserAccount;
-  });
-
-  return admin;
-};
-
-// 모든 사용자 조회 (관리자용)
-export const getAllUsers = async (): Promise<UserAccount[]> => {
-  const usersRef = ref(database, USERS_REF);
-  const snapshot = await get(usersRef);
-
-  if (!snapshot.exists()) {
-    return [];
-  }
-
-  const users: UserAccount[] = [];
-  snapshot.forEach((child) => {
-    users.push(child.val() as UserAccount);
-  });
-
-  return users.sort((a, b) => b.createdAt - a.createdAt);
 };
 
 // 사용자 삭제 (관리자용)
