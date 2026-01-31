@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
-import type { ContentType, JobClass } from '../types';
-import { CONTENT_LIST } from '../types';
+import type { ContentType, DifficultyType, JobClass } from '../types';
+import { DIFFICULTY_LIST } from '../types';
 import { format } from 'date-fns';
 import './CreateSchedulePage.css';
 
@@ -13,6 +13,7 @@ const CreateSchedulePage: React.FC = () => {
   const { selectedCharacter } = useUser();
 
   const [type, setType] = useState<ContentType>('어비스');
+  const [difficulty, setDifficulty] = useState<DifficultyType>('어려움');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [time, setTime] = useState('21:00');
@@ -30,8 +31,8 @@ const CreateSchedulePage: React.FC = () => {
       return;
     }
 
-    if (!title) {
-      alert('컨텐츠를 선택해주세요.');
+    if (!title.trim()) {
+      alert('컨텐츠명을 입력해주세요.');
       return;
     }
 
@@ -44,7 +45,8 @@ const CreateSchedulePage: React.FC = () => {
     try {
       await createSchedule({
         type,
-        title,
+        difficulty,
+        title: title.trim(),
         date,
         time,
         maxMembers,
@@ -89,20 +91,14 @@ const CreateSchedulePage: React.FC = () => {
             <button
               type="button"
               className={`type-btn ${type === '어비스' ? 'active abyss' : ''}`}
-              onClick={() => {
-                setType('어비스');
-                setTitle('');
-              }}
+              onClick={() => setType('어비스')}
             >
               어비스
             </button>
             <button
               type="button"
               className={`type-btn ${type === '레이드' ? 'active raid' : ''}`}
-              onClick={() => {
-                setType('레이드');
-                setTitle('');
-              }}
+              onClick={() => setType('레이드')}
             >
               레이드
             </button>
@@ -110,20 +106,31 @@ const CreateSchedulePage: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label>컨텐츠</label>
-          <select
+          <label>난이도</label>
+          <div className="difficulty-select">
+            {DIFFICULTY_LIST.map((diff) => (
+              <button
+                key={diff}
+                type="button"
+                className={`difficulty-btn ${difficulty === diff ? 'active' : ''}`}
+                onClick={() => setDifficulty(diff)}
+              >
+                {diff}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>컨텐츠명</label>
+          <input
+            type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="form-input"
+            placeholder="예: 사막 어비스, 드래곤 레이드"
             required
-          >
-            <option value="">선택해주세요</option>
-            {CONTENT_LIST[type].map((content) => (
-              <option key={content} value={content}>
-                {content}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         <div className="form-row">

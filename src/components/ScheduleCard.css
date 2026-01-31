@@ -44,6 +44,33 @@
   color: white;
 }
 
+.schedule-difficulty-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.schedule-difficulty-badge[data-difficulty="입문"] {
+  background: #28a745;
+  color: white;
+}
+
+.schedule-difficulty-badge[data-difficulty="어려움"] {
+  background: #ffc107;
+  color: #000;
+}
+
+.schedule-difficulty-badge[data-difficulty="매우 어려움"] {
+  background: #fd7e14;
+  color: white;
+}
+
+.schedule-difficulty-badge[data-difficulty="지옥"] {
+  background: #dc3545;
+  color: white;
+}
+
 .schedule-date-time {
   display: flex;
   align-items: center;

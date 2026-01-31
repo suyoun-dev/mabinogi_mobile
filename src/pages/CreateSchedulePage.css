@@ -84,6 +84,37 @@
   color: #f5576c;
 }
 
+.difficulty-select {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.difficulty-btn {
+  flex: 1;
+  min-width: 70px;
+  padding: 10px 8px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: transparent;
+  color: #888;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.difficulty-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.difficulty-btn.active {
+  border-color: #ffc107;
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+}
+
 .form-input {
   padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
