@@ -131,6 +131,19 @@ export const useSchedules = () => {
     []
   );
 
+  const updateMemberJob = useCallback(
+    async (scheduleId: string, characterId: string, newJob: string) => {
+      try {
+        setError(null);
+        await scheduleService.updateMemberJob(scheduleId, characterId, newJob);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '직업 변경 실패');
+        throw err;
+      }
+    },
+    []
+  );
+
   return {
     schedules,
     loading,
@@ -145,5 +158,6 @@ export const useSchedules = () => {
     removeMember,
     deletePastSchedules,
     addMemberDirectly,
+    updateMemberJob,
   };
 };

@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
 import ScheduleCard from '../components/ScheduleCard';
 import type { JobClass } from '../types';
+import html2canvas from 'html2canvas';
 import './MySchedulePage.css';
 
 const MySchedulePage: React.FC = () => {
   const navigate = useNavigate();
-  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule } = useSchedules();
+  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob } = useSchedules();
   const { selectedCharacter } = useUser();
+  const scheduleListRef = useRef<HTMLDivElement>(null);
 
   const mySchedules = selectedCharacter
     ? schedules.filter((schedule) => {
@@ -40,6 +42,36 @@ const MySchedulePage: React.FC = () => {
 
   const handleDelete = async (scheduleId: string) => {
     await deleteSchedule(scheduleId);
+  };
+
+  const handleRemoveMember = async (scheduleId: string, characterId: string) => {
+    await removeMember(scheduleId, characterId);
+  };
+
+  const handleAddMemberDirectly = async (scheduleId: string, nickname: string, job: string) => {
+    await addMemberDirectly(scheduleId, nickname, job);
+  };
+
+  const handleUpdateMemberJob = async (scheduleId: string, characterId: string, newJob: JobClass) => {
+    await updateMemberJob(scheduleId, characterId, newJob);
+  };
+
+  const handleDownloadImage = async () => {
+    if (!scheduleListRef.current || mySchedules.length === 0) return;
+
+    try {
+      const canvas = await html2canvas(scheduleListRef.current, {
+        backgroundColor: '#0f0f23',
+        scale: 2,
+      });
+
+      const link = document.createElement('a');
+      link.download = `내일정_${selectedCharacter?.nickname}_${new Date().toLocaleDateString('ko-KR')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      alert('이미지 다운로드 실패');
+    }
   };
 
   if (!selectedCharacter) {
@@ -80,18 +112,28 @@ const MySchedulePage: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="schedule-list">
-          {mySchedules.map((schedule) => (
-            <ScheduleCard
-              key={schedule.id}
-              schedule={schedule}
-              onJoin={handleJoin}
-              onLeave={handleLeave}
-              onToggleClosed={handleToggleClosed}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
+        <>
+          <div className="download-section">
+            <button className="btn btn-secondary download-btn" onClick={handleDownloadImage}>
+              이미지로 저장
+            </button>
+          </div>
+          <div className="schedule-list" ref={scheduleListRef}>
+            {mySchedules.map((schedule) => (
+              <ScheduleCard
+                key={schedule.id}
+                schedule={schedule}
+                onJoin={handleJoin}
+                onLeave={handleLeave}
+                onToggleClosed={handleToggleClosed}
+                onDelete={handleDelete}
+                onRemoveMember={handleRemoveMember}
+                onAddMemberDirectly={handleAddMemberDirectly}
+                onUpdateMemberJob={handleUpdateMemberJob}
+              />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

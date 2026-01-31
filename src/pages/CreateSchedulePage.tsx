@@ -4,7 +4,7 @@ import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '../contexts/AuthContext';
 import type { ContentType, DifficultyType, JobClass } from '../types';
-import { DIFFICULTY_LIST, CONTENT_LIST } from '../types';
+import { DIFFICULTY_LIST, CONTENT_LIST, JOB_LIST_WITH_UNDECIDED } from '../types';
 import { format } from 'date-fns';
 import './CreateSchedulePage.css';
 
@@ -25,6 +25,13 @@ const CreateSchedulePage: React.FC = () => {
   const [leaderJob, setLeaderJob] = useState<JobClass | ''>('');
   const [loading, setLoading] = useState(false);
 
+  // 관리자용: 파티장 직접 입력 모드
+  const [useCustomLeader, setUseCustomLeader] = useState(false);
+  const [customLeaderNickname, setCustomLeaderNickname] = useState('');
+  const [customLeaderJob, setCustomLeaderJob] = useState<JobClass | ''>('');
+
+  const isAdmin = user?.role === 'admin';
+
   const handleTypeChange = (newType: ContentType) => {
     setType(newType);
     setContentName(''); // 종류 변경 시 컨텐츠 선택 초기화
@@ -32,12 +39,6 @@ const CreateSchedulePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!selectedCharacter) {
-      alert('캐릭터를 먼저 등록해주세요.');
-      navigate('/characters');
-      return;
-    }
 
     if (!user) {
       alert('로그인이 필요합니다.');
@@ -50,13 +51,40 @@ const CreateSchedulePage: React.FC = () => {
       return;
     }
 
-    if (!leaderJob) {
-      alert('참여할 직업을 선택해주세요.');
-      return;
+    // 관리자 직접 입력 모드
+    if (useCustomLeader && isAdmin) {
+      if (!customLeaderNickname.trim()) {
+        alert('파티장 닉네임을 입력해주세요.');
+        return;
+      }
+      if (!customLeaderJob) {
+        alert('파티장 직업을 선택해주세요.');
+        return;
+      }
+    } else {
+      if (!selectedCharacter) {
+        alert('캐릭터를 먼저 등록해주세요.');
+        navigate('/characters');
+        return;
+      }
+      if (!leaderJob) {
+        alert('참여할 직업을 선택해주세요.');
+        return;
+      }
     }
 
     setLoading(true);
     try {
+      const leaderId = useCustomLeader && isAdmin
+        ? `custom_${Date.now()}`
+        : selectedCharacter!.id;
+      const leaderNickname = useCustomLeader && isAdmin
+        ? customLeaderNickname.trim()
+        : selectedCharacter!.nickname;
+      const finalLeaderJob = useCustomLeader && isAdmin
+        ? customLeaderJob as JobClass
+        : leaderJob as JobClass;
+
       await createSchedule({
         type,
         contentName,
@@ -67,8 +95,9 @@ const CreateSchedulePage: React.FC = () => {
         maxMembers,
         note,
         isClosed: false,
-        leaderId: selectedCharacter.id,
-        leaderNickname: `${selectedCharacter.nickname} (${leaderJob})`,
+        leaderId,
+        leaderNickname: `${leaderNickname} (${finalLeaderJob})`,
+        leaderJob: finalLeaderJob,
         members: [],
         createdBy: user.id,
       });
@@ -82,7 +111,8 @@ const CreateSchedulePage: React.FC = () => {
     }
   };
 
-  if (!selectedCharacter) {
+  // 관리자가 아닌 경우에만 캐릭터 필수
+  if (!selectedCharacter && !isAdmin) {
     return (
       <div className="page create-schedule-page">
         <div className="no-character">
@@ -204,20 +234,65 @@ const CreateSchedulePage: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label>파티장 직업</label>
-          <select
-            value={leaderJob}
-            onChange={(e) => setLeaderJob(e.target.value as JobClass)}
-            className="form-input"
-            required
-          >
-            <option value="">직업 선택</option>
-            {selectedCharacter.jobs.map((job) => (
-              <option key={job} value={job}>
-                {job}
-              </option>
-            ))}
-          </select>
+          <label>파티장</label>
+          {isAdmin && (
+            <div className="leader-mode-toggle">
+              <button
+                type="button"
+                className={`toggle-btn ${!useCustomLeader ? 'active' : ''}`}
+                onClick={() => setUseCustomLeader(false)}
+              >
+                내 캐릭터
+              </button>
+              <button
+                type="button"
+                className={`toggle-btn ${useCustomLeader ? 'active' : ''}`}
+                onClick={() => setUseCustomLeader(true)}
+              >
+                직접 입력
+              </button>
+            </div>
+          )}
+          {useCustomLeader && isAdmin ? (
+            <div className="custom-leader-inputs">
+              <input
+                type="text"
+                value={customLeaderNickname}
+                onChange={(e) => setCustomLeaderNickname(e.target.value)}
+                className="form-input"
+                placeholder="파티장 닉네임"
+                maxLength={20}
+                required
+              />
+              <select
+                value={customLeaderJob}
+                onChange={(e) => setCustomLeaderJob(e.target.value as JobClass)}
+                className="form-input"
+                required
+              >
+                <option value="">직업 선택</option>
+                {JOB_LIST_WITH_UNDECIDED.map((job) => (
+                  <option key={job} value={job}>
+                    {job}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <select
+              value={leaderJob}
+              onChange={(e) => setLeaderJob(e.target.value as JobClass)}
+              className="form-input"
+              required
+            >
+              <option value="">직업 선택</option>
+              {selectedCharacter?.jobs.map((job) => (
+                <option key={job} value={job}>
+                  {job}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="form-group">

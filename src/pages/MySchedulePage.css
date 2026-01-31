@@ -44,3 +44,15 @@
   color: #888;
   margin-bottom: 24px;
 }
+
+.my-schedule-page .download-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.my-schedule-page .download-btn {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  flex: none;
+}

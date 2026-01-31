@@ -23,8 +23,24 @@
 .schedule-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.schedule-content-name {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.schedule-date-time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  color: #a0a0a0;
 }
 
 .schedule-type-badge {
@@ -144,6 +160,39 @@
 
 .member-tag small {
   color: #888;
+  margin-left: 4px;
+}
+
+/* 본인 닉네임 강조 */
+.my-nickname {
+  background: rgba(233, 69, 96, 0.25) !important;
+  border: 1px solid rgba(233, 69, 96, 0.5);
+  color: #fff !important;
+}
+
+.schedule-info .value.my-nickname {
+  color: #e94560 !important;
+  font-weight: 600;
+}
+
+/* 직업 수정 가능 표시 */
+.editable-job {
+  cursor: pointer;
+  color: #ffc107 !important;
+  text-decoration: underline;
+}
+
+.editable-job:hover {
+  color: #fff !important;
+}
+
+.job-edit-select {
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid #e94560;
+  background: #16213e;
+  color: #fff;
+  font-size: 0.75rem;
   margin-left: 4px;
 }
 

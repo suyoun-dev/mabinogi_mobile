@@ -277,3 +277,35 @@ export const addMemberDirectly = async (
 
   return true;
 };
+
+// 파티원 직업 변경 (미정 -> 실제 직업)
+export const updateMemberJob = async (
+  scheduleId: string,
+  characterId: string,
+  newJob: string
+): Promise<boolean> => {
+  const schedule = await getScheduleById(scheduleId);
+
+  if (!schedule) {
+    throw new Error('일정을 찾을 수 없습니다.');
+  }
+
+  const currentMembers = schedule.members || [];
+  const memberIndex = currentMembers.findIndex(
+    (m) => m.characterId === characterId
+  );
+
+  if (memberIndex === -1) {
+    throw new Error('해당 멤버를 찾을 수 없습니다.');
+  }
+
+  const updatedMembers = [...currentMembers];
+  updatedMembers[memberIndex] = {
+    ...updatedMembers[memberIndex],
+    job: newJob as PartyMember['job'],
+  };
+
+  await updateSchedule(scheduleId, { members: updatedMembers });
+
+  return true;
+};

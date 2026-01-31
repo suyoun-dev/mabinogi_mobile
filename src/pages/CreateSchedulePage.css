@@ -145,3 +145,39 @@
   padding: 14px;
   font-size: 1rem;
 }
+
+/* 파티장 모드 토글 */
+.leader-mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: transparent;
+  color: #888;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.toggle-btn.active {
+  border-color: #e94560;
+  background: rgba(233, 69, 96, 0.15);
+  color: #e94560;
+}
+
+.custom-leader-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

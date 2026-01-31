@@ -6,7 +6,7 @@ import type { JobClass, ContentType } from '../types';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
-  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly } = useSchedules();
+  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob } = useSchedules();
   const { selectedCharacter } = useUser();
   const [filter, setFilter] = useState<ContentType | 'all'>('all');
 
@@ -44,6 +44,10 @@ const HomePage: React.FC = () => {
 
   const handleAddMemberDirectly = async (scheduleId: string, nickname: string, job: string) => {
     await addMemberDirectly(scheduleId, nickname, job);
+  };
+
+  const handleUpdateMemberJob = async (scheduleId: string, characterId: string, newJob: JobClass) => {
+    await updateMemberJob(scheduleId, characterId, newJob);
   };
 
   if (loading) {
@@ -94,6 +98,7 @@ const HomePage: React.FC = () => {
               onDelete={handleDelete}
               onRemoveMember={handleRemoveMember}
               onAddMemberDirectly={handleAddMemberDirectly}
+              onUpdateMemberJob={handleUpdateMemberJob}
             />
           ))}
         </div>
