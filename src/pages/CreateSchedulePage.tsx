@@ -291,6 +291,7 @@ const CreateSchedulePage: React.FC = () => {
                   {job}
                 </option>
               ))}
+              <option value="미정">미정 (추후 결정)</option>
             </select>
           )}
         </div>

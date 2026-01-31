@@ -1,17 +1,20 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
 import ScheduleCard from '../components/ScheduleCard';
-import type { JobClass } from '../types';
+import type { JobClass, Schedule } from '../types';
 import html2canvas from 'html2canvas';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import './MySchedulePage.css';
 
 const MySchedulePage: React.FC = () => {
   const navigate = useNavigate();
   const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob } = useSchedules();
   const { selectedCharacter } = useUser();
-  const scheduleListRef = useRef<HTMLDivElement>(null);
+  const scheduleTableRef = useRef<HTMLDivElement>(null);
+  const [showExportTable, setShowExportTable] = useState(false);
 
   const mySchedules = selectedCharacter
     ? schedules.filter((schedule) => {
@@ -56,12 +59,32 @@ const MySchedulePage: React.FC = () => {
     await updateMemberJob(scheduleId, characterId, newJob);
   };
 
+  // 본인 신청 직업 가져오기
+  const getMyJob = (schedule: Schedule): string => {
+    if (schedule.leaderId === selectedCharacter?.id) {
+      return schedule.leaderJob || '파티장';
+    }
+    const myMember = schedule.members?.find(m => m.characterId === selectedCharacter?.id);
+    return myMember?.job || '-';
+  };
+
   const handleDownloadImage = async () => {
-    if (!scheduleListRef.current || mySchedules.length === 0) return;
+    if (mySchedules.length === 0) return;
+
+    // 먼저 테이블을 표시
+    setShowExportTable(true);
+
+    // DOM 업데이트 대기
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    if (!scheduleTableRef.current) {
+      setShowExportTable(false);
+      return;
+    }
 
     try {
-      const canvas = await html2canvas(scheduleListRef.current, {
-        backgroundColor: '#0f0f23',
+      const canvas = await html2canvas(scheduleTableRef.current, {
+        backgroundColor: '#0F3360',
         scale: 2,
       });
 
@@ -71,6 +94,8 @@ const MySchedulePage: React.FC = () => {
       link.click();
     } catch (error) {
       alert('이미지 다운로드 실패');
+    } finally {
+      setShowExportTable(false);
     }
   };
 
@@ -118,7 +143,7 @@ const MySchedulePage: React.FC = () => {
               이미지로 저장
             </button>
           </div>
-          <div className="schedule-list" ref={scheduleListRef}>
+          <div className="schedule-list">
             {mySchedules.map((schedule) => (
               <ScheduleCard
                 key={schedule.id}
@@ -134,6 +159,39 @@ const MySchedulePage: React.FC = () => {
             ))}
           </div>
         </>
+      )}
+
+      {/* 이미지 내보내기용 테이블 (화면에 숨김) */}
+      {showExportTable && (
+        <div className="export-table-container" ref={scheduleTableRef}>
+          <div className="export-header">
+            <h2>새녘 모비노기 스케줄러</h2>
+            <p className="export-nickname">{selectedCharacter.nickname}님의 일정</p>
+            <p className="export-date">{format(new Date(), 'yyyy년 M월 d일 (E)', { locale: ko })}</p>
+          </div>
+          <table className="export-table">
+            <thead>
+              <tr>
+                <th>날짜/시간</th>
+                <th>컨텐츠</th>
+                <th>난이도</th>
+                <th>파티장</th>
+                <th>내 직업</th>
+              </tr>
+            </thead>
+            <tbody>
+              {mySchedules.map((schedule) => (
+                <tr key={schedule.id}>
+                  <td>{format(new Date(schedule.date), 'M/d')} {schedule.time}</td>
+                  <td>{schedule.contentName}</td>
+                  <td>{schedule.difficulty}</td>
+                  <td>{schedule.leaderNickname.split(' (')[0]}</td>
+                  <td>{getMyJob(schedule)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

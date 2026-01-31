@@ -3,7 +3,7 @@
 }
 
 .admin-section {
-  background: #1f1f3a;
+  background: rgba(10, 38, 71, 0.8);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -26,14 +26,14 @@
   padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  background: #16213e;
+  background: #0a2647;
   color: #fff;
   font-size: 1rem;
 }
 
 .create-user-form .form-input:focus {
   outline: none;
-  border-color: #e94560;
+  border-color: #FF8E8E;
 }
 
 .create-user-form .btn {
@@ -65,8 +65,8 @@
 }
 
 .user-card.admin {
-  border-color: rgba(233, 69, 96, 0.3);
-  background: rgba(233, 69, 96, 0.05);
+  border-color: rgba(255, 142, 142, 0.3);
+  background: rgba(255, 142, 142, 0.05);
 }
 
 .user-info {
@@ -87,7 +87,7 @@
 }
 
 .admin-badge {
-  background: #e94560;
+  background: #FF8E8E;
   color: #fff;
   padding: 2px 8px;
   border-radius: 4px;
@@ -105,7 +105,7 @@
 }
 
 .user-code:hover {
-  color: #e94560;
+  color: #FF8E8E;
 }
 
 .user-code strong {

@@ -13,8 +13,8 @@
 }
 
 .my-schedule-page .character-name {
-  background: rgba(233, 69, 96, 0.2);
-  color: #e94560;
+  background: rgba(255, 142, 142, 0.2);
+  color: #FF8E8E;
   padding: 6px 14px;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -55,4 +55,74 @@
   padding: 10px 20px;
   font-size: 0.9rem;
   flex: none;
+}
+
+/* 이미지 내보내기용 테이블 스타일 */
+.export-table-container {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  background: #0F3360;
+  padding: 24px;
+  border-radius: 16px;
+  min-width: 500px;
+}
+
+.export-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.export-header h2 {
+  color: #FFFFFF;
+  font-size: 1.4rem;
+  margin: 0 0 8px 0;
+}
+
+.export-nickname {
+  color: #FF8E8E;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.export-date {
+  color: #7D7DB5;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.export-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.export-table th,
+.export-table td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.export-table th {
+  background: rgba(125, 125, 181, 0.3);
+  color: #FFFFFF;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.export-table td {
+  color: #FFFFFF;
+  font-size: 0.85rem;
+}
+
+.export-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.export-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
 }

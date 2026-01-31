@@ -1,5 +1,5 @@
 .schedule-card {
-  background: #1f1f3a;
+  background: rgba(10, 38, 71, 0.8);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
@@ -8,12 +8,12 @@
 }
 
 .schedule-card:hover {
-  border-color: rgba(233, 69, 96, 0.3);
+  border-color: rgba(255, 142, 142, 0.3);
 }
 
 .schedule-card.closed {
   opacity: 0.7;
-  background: #1a1a2e;
+  background: rgba(10, 38, 71, 0.5);
 }
 
 .schedule-card.past {
@@ -29,9 +29,12 @@
 }
 
 .schedule-content-name {
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  color: white;
 }
 
 .schedule-date-time-row {
@@ -96,7 +99,7 @@
 }
 
 .date-label {
-  color: #e94560;
+  color: #FF8E8E;
   font-weight: 500;
 }
 
@@ -136,7 +139,7 @@
 }
 
 .member-count .value.full {
-  color: #e94560;
+  color: #FF8E8E;
 }
 
 .members-list {
@@ -165,13 +168,13 @@
 
 /* 본인 닉네임 강조 */
 .my-nickname {
-  background: rgba(233, 69, 96, 0.25) !important;
-  border: 1px solid rgba(233, 69, 96, 0.5);
+  background: rgba(255, 142, 142, 0.25) !important;
+  border: 1px solid rgba(255, 142, 142, 0.5);
   color: #fff !important;
 }
 
 .schedule-info .value.my-nickname {
-  color: #e94560 !important;
+  color: #FF8E8E !important;
   font-weight: 600;
 }
 
@@ -189,8 +192,8 @@
 .job-edit-select {
   padding: 2px 4px;
   border-radius: 4px;
-  border: 1px solid #e94560;
-  background: #16213e;
+  border: 1px solid #FF8E8E;
+  background: #0a2647;
   color: #fff;
   font-size: 0.75rem;
   margin-left: 4px;
@@ -199,7 +202,7 @@
 .member-remove-btn {
   background: transparent;
   border: none;
-  color: #e94560;
+  color: #FF8E8E;
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
@@ -262,13 +265,13 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #e94560 0%, #c73e54 100%);
+  background: linear-gradient(135deg, #FF8E8E 0%, #d07070 100%);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
+  box-shadow: 0 4px 12px rgba(255, 142, 142, 0.4);
 }
 
 .btn-secondary {
@@ -305,14 +308,14 @@
   padding: 10px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  background: #2a2a4a;
+  background: #144272;
   color: #fff;
   font-size: 0.9rem;
 }
 
 .job-select:focus {
   outline: none;
-  border-color: #e94560;
+  border-color: #FF8E8E;
 }
 
 .admin-badge {
@@ -330,7 +333,7 @@
   border-radius: 10px;
   padding: 14px;
   margin-bottom: 12px;
-  border: 1px solid rgba(233, 69, 96, 0.3);
+  border: 1px solid rgba(255, 142, 142, 0.3);
 }
 
 .add-member-header {
@@ -342,7 +345,7 @@
 
 .add-member-header .label {
   font-size: 0.85rem;
-  color: #e94560;
+  color: #FF8E8E;
   font-weight: 600;
 }
 
@@ -357,7 +360,7 @@
 }
 
 .add-member-header .close-btn:hover {
-  color: #e94560;
+  color: #FF8E8E;
 }
 
 .add-member-inputs {
@@ -372,14 +375,14 @@
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #16213e;
+  background: #0a2647;
   color: #fff;
   font-size: 0.9rem;
 }
 
 .add-member-input:focus {
   outline: none;
-  border-color: #e94560;
+  border-color: #FF8E8E;
 }
 
 .add-member-select {
@@ -388,14 +391,14 @@
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: #16213e;
+  background: #0a2647;
   color: #fff;
   font-size: 0.9rem;
 }
 
 .add-member-select:focus {
   outline: none;
-  border-color: #e94560;
+  border-color: #FF8E8E;
 }
 
 .btn-sm {

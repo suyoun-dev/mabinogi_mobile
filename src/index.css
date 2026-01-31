@@ -3,14 +3,20 @@
 }
 
 :root {
+  /* 주요 컬러 팔레트 */
+  --color-deep-navy: #0F3360;
+  --color-pastel-coral: #FF8E8E;
+  --color-lavender-purple: #7D7DB5;
+  --color-pure-white: #FFFFFF;
+
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto,
     'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR',
     'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #0f0f23;
+  color: var(--color-pure-white);
+  background-color: var(--color-deep-navy);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -76,5 +82,5 @@ input, select, textarea {
 
 /* 선택 색상 */
 ::selection {
-  background: rgba(233, 69, 96, 0.3);
+  background: rgba(255, 142, 142, 0.3);
 }

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F3360"/>
+      <stop offset="100%" style="stop-color:#0a2647"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="url(#bgGrad)" stroke="#7D7DB5" stroke-width="2"/>
+  <!-- Compass needle (pointing up) -->
+  <polygon points="32,8 38,32 32,28 26,32" fill="#FF8E8E"/>
+  <polygon points="32,56 38,32 32,36 26,32" fill="#7D7DB5"/>
+  <!-- Compass circle -->
+  <circle cx="32" cy="32" r="6" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+  <!-- Center dot -->
+  <circle cx="32" cy="32" r="2" fill="#FF8E8E"/>
+  <!-- Direction marks -->
+  <line x1="32" y1="14" x2="32" y2="18" stroke="#FFFFFF" stroke-width="1.5"/>
+  <line x1="32" y1="46" x2="32" y2="50" stroke="#FFFFFF" stroke-width="1.5"/>
+  <line x1="14" y1="32" x2="18" y2="32" stroke="#FFFFFF" stroke-width="1.5"/>
+  <line x1="46" y1="32" x2="50" y2="32" stroke="#FFFFFF" stroke-width="1.5"/>
+</svg>

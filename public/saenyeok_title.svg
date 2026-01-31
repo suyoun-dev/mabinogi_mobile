@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 120">
+  <defs>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="100%" style="stop-color:#E0E0E0"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF8E8E"/>
+      <stop offset="100%" style="stop-color:#d07070"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Compass design -->
+  <g transform="translate(120, 35)">
+    <!-- Compass outer circle -->
+    <circle cx="0" cy="0" r="28" fill="none" stroke="#7D7DB5" stroke-width="1.5" opacity="0.6"/>
+    <!-- Compass rays -->
+    <g stroke="#7D7DB5" stroke-width="1" opacity="0.4">
+      <line x1="0" y1="-20" x2="0" y2="-35"/>
+      <line x1="14" y1="-14" x2="21" y2="-21"/>
+      <line x1="20" y1="0" x2="35" y2="0"/>
+      <line x1="14" y1="14" x2="21" y2="21"/>
+      <line x1="-14" y1="-14" x2="-21" y2="-21"/>
+      <line x1="-20" y1="0" x2="-35" y2="0"/>
+      <line x1="-14" y1="14" x2="-21" y2="21"/>
+    </g>
+    <!-- Main needle -->
+    <polygon points="0,-32 6,0 0,-4 -6,0" fill="url(#textGrad)"/>
+    <polygon points="0,32 6,0 0,4 -6,0" fill="#7D7DB5"/>
+    <!-- Center -->
+    <circle cx="0" cy="0" r="4" fill="url(#accentGrad)"/>
+  </g>
+
+  <!-- 새녘 Text -->
+  <text x="120" y="95" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="url(#textGrad)" text-anchor="middle" letter-spacing="4">새 녘</text>
+
+  <!-- Decorative stars -->
+  <g fill="url(#accentGrad)">
+    <polygon points="195,75 197,80 202,80 198,83 200,88 195,85 190,88 192,83 188,80 193,80" transform="scale(0.6) translate(170, 30)"/>
+    <polygon points="195,75 197,80 202,80 198,83 200,88 195,85 190,88 192,83 188,80 193,80" transform="scale(0.5) translate(200, 50)"/>
+    <polygon points="195,75 197,80 202,80 198,83 200,88 195,85 190,88 192,83 188,80 193,80" transform="scale(0.4) translate(230, 70)"/>
+  </g>
+</svg>
