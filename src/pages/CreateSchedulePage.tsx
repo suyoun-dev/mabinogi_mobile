@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
+import { useAuth } from '../contexts/AuthContext';
 import type { ContentType, DifficultyType, JobClass } from '../types';
-import { DIFFICULTY_LIST } from '../types';
+import { DIFFICULTY_LIST, CONTENT_LIST } from '../types';
 import { format } from 'date-fns';
 import './CreateSchedulePage.css';
 
@@ -11,8 +12,10 @@ const CreateSchedulePage: React.FC = () => {
   const navigate = useNavigate();
   const { createSchedule } = useSchedules();
   const { selectedCharacter } = useUser();
+  const { user } = useAuth();
 
   const [type, setType] = useState<ContentType>('어비스');
+  const [contentName, setContentName] = useState('');
   const [difficulty, setDifficulty] = useState<DifficultyType>('어려움');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -21,6 +24,11 @@ const CreateSchedulePage: React.FC = () => {
   const [note, setNote] = useState('');
   const [leaderJob, setLeaderJob] = useState<JobClass | ''>('');
   const [loading, setLoading] = useState(false);
+
+  const handleTypeChange = (newType: ContentType) => {
+    setType(newType);
+    setContentName(''); // 종류 변경 시 컨텐츠 선택 초기화
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +39,14 @@ const CreateSchedulePage: React.FC = () => {
       return;
     }
 
-    if (!title.trim()) {
-      alert('컨텐츠명을 입력해주세요.');
+    if (!user) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+
+    if (!contentName) {
+      alert('컨텐츠를 선택해주세요.');
       return;
     }
 
@@ -45,8 +59,9 @@ const CreateSchedulePage: React.FC = () => {
     try {
       await createSchedule({
         type,
+        contentName,
         difficulty,
-        title: title.trim(),
+        title: title.trim() || `${contentName} ${difficulty}`,
         date,
         time,
         maxMembers,
@@ -55,6 +70,7 @@ const CreateSchedulePage: React.FC = () => {
         leaderId: selectedCharacter.id,
         leaderNickname: `${selectedCharacter.nickname} (${leaderJob})`,
         members: [],
+        createdBy: user.id,
       });
 
       alert('일정이 등록되었습니다!');
@@ -91,18 +107,35 @@ const CreateSchedulePage: React.FC = () => {
             <button
               type="button"
               className={`type-btn ${type === '어비스' ? 'active abyss' : ''}`}
-              onClick={() => setType('어비스')}
+              onClick={() => handleTypeChange('어비스')}
             >
               어비스
             </button>
             <button
               type="button"
               className={`type-btn ${type === '레이드' ? 'active raid' : ''}`}
-              onClick={() => setType('레이드')}
+              onClick={() => handleTypeChange('레이드')}
             >
               레이드
             </button>
           </div>
+        </div>
+
+        <div className="form-group">
+          <label>컨텐츠</label>
+          <select
+            value={contentName}
+            onChange={(e) => setContentName(e.target.value)}
+            className="form-input"
+            required
+          >
+            <option value="">선택해주세요</option>
+            {CONTENT_LIST[type].map((content) => (
+              <option key={content} value={content}>
+                {content}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="form-group">
@@ -122,14 +155,13 @@ const CreateSchedulePage: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label>컨텐츠명</label>
+          <label>일정 제목 (선택)</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="form-input"
-            placeholder="예: 사막 어비스, 드래곤 레이드"
-            required
+            placeholder={contentName ? `${contentName} ${difficulty}` : '자동 생성됩니다'}
           />
         </div>
 

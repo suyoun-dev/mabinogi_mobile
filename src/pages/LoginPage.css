@@ -1,0 +1,129 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+}
+
+.login-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px 30px;
+  background: #1f1f3a;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.login-title {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #e94560;
+  margin: 0 0 8px 0;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: #888;
+  margin: 0 0 30px 0;
+  font-size: 0.95rem;
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.mode-tab {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: transparent;
+  color: #888;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-tab:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.mode-tab.active {
+  border-color: #e94560;
+  background: rgba(233, 69, 96, 0.1);
+  color: #e94560;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.login-form .form-group label {
+  font-size: 0.9rem;
+  color: #aaa;
+  font-weight: 500;
+}
+
+.login-form .form-input {
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: #16213e;
+  color: #fff;
+  font-size: 1.1rem;
+  text-align: center;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.login-form .form-input:focus {
+  outline: none;
+  border-color: #e94560;
+  box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+}
+
+.login-form .form-input::placeholder {
+  color: #555;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0;
+  padding: 10px;
+  background: rgba(220, 53, 69, 0.1);
+  border-radius: 8px;
+}
+
+.login-form .btn {
+  padding: 14px;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.login-form .hint {
+  text-align: center;
+  color: #666;
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.5;
+}

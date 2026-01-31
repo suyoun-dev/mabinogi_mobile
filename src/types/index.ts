@@ -27,9 +27,22 @@ export type ContentType = '어비스' | '레이드';
 // 컨텐츠 난이도
 export type DifficultyType = '입문' | '어려움' | '매우 어려움' | '지옥';
 
+// 사용자 역할
+export type UserRole = 'admin' | 'user';
+
+// 사용자 계정 정보
+export interface UserAccount {
+  id: string;
+  code: string; // 사용자 고유 코드 (로그인용)
+  nickname: string;
+  role: UserRole;
+  createdAt: number;
+}
+
 // 캐릭터 정보
 export interface Character {
   id: string;
+  ownerId?: string; // 소유자 사용자 ID
   nickname: string;
   jobs: JobClass[];
   createdAt: number;
@@ -49,14 +62,16 @@ export interface Schedule {
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
   type: ContentType;
+  contentName: string; // 상세 컨텐츠명 (바리 어비스, 글라스기브넨 등)
   difficulty: DifficultyType; // 난이도
-  title: string; // 컨텐츠명
+  title: string; // 일정 제목
   isClosed: boolean; // 마감 여부
   leaderId: string; // 파티장 캐릭터 ID
   leaderNickname: string; // 파티장 닉네임
   members: PartyMember[]; // 멤버 목록
   maxMembers: number; // 최대 인원
   note: string; // 비고
+  createdBy: string; // 생성자 사용자 ID
   createdAt: number;
   updatedAt: number;
 }
@@ -98,3 +113,9 @@ export const DIFFICULTY_LIST: DifficultyType[] = [
   '매우 어려움',
   '지옥',
 ];
+
+// 컨텐츠 상세 목록
+export const CONTENT_LIST: Record<ContentType, string[]> = {
+  어비스: ['바리 어비스'],
+  레이드: ['글라스기브넨', '화이트 서큐버스', '에이렐', '타바르타스'],
+};

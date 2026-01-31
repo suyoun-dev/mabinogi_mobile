@@ -1,0 +1,131 @@
+.admin-page .page-title {
+  margin-bottom: 24px;
+}
+
+.admin-section {
+  background: #1f1f3a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-section h3 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin: 0 0 16px 0;
+}
+
+.create-user-form {
+  display: flex;
+  gap: 10px;
+}
+
+.create-user-form .form-input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: #16213e;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.create-user-form .form-input:focus {
+  outline: none;
+  border-color: #e94560;
+}
+
+.create-user-form .btn {
+  padding: 12px 20px;
+  white-space: nowrap;
+}
+
+.loading-text,
+.empty-text {
+  color: #888;
+  text-align: center;
+  padding: 20px;
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.user-card.admin {
+  border-color: rgba(233, 69, 96, 0.3);
+  background: rgba(233, 69, 96, 0.05);
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.user-nickname {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.admin-badge {
+  background: #e94560;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.user-code {
+  font-size: 0.9rem;
+  color: #aaa;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-code:hover {
+  color: #e94560;
+}
+
+.user-code strong {
+  color: #ffc107;
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+.copy-hint {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.user-date {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+.btn-small {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
