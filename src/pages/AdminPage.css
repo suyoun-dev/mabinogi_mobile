@@ -129,3 +129,19 @@
   padding: 8px 14px;
   font-size: 0.85rem;
 }
+
+.schedule-management {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.schedule-management .btn {
+  padding: 14px 20px;
+}
+
+.hint-text {
+  color: #888;
+  font-size: 0.85rem;
+  margin: 0;
+}

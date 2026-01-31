@@ -60,7 +60,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-        <h1 className="login-title">마비노기M 일정</h1>
+        <h1 className="login-title">새녘 스케줄러</h1>
         <p className="login-subtitle">어비스 & 레이드 파티 관리</p>
 
         <div className="mode-tabs">

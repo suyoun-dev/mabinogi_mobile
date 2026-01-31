@@ -23,7 +23,7 @@ const Header: React.FC = () => {
     <header className="header">
       <div className="header-top">
         <Link to="/" className="logo">
-          마비노기M 일정
+          새녘 스케줄러
         </Link>
         <div className="header-right">
           {user && (

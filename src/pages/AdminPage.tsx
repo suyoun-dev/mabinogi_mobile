@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useSchedules } from '../hooks/useSchedules';
 import * as authService from '../services/authService';
 import type { UserAccount } from '../types';
 import './AdminPage.css';
 
 const AdminPage: React.FC = () => {
   const { user } = useAuth();
+  const { deletePastSchedules } = useSchedules();
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [newNickname, setNewNickname] = useState('');
   const [creating, setCreating] = useState(false);
+  const [deletingPast, setDeletingPast] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -67,9 +70,39 @@ const AdminPage: React.FC = () => {
     alert(`코드가 복사되었습니다: ${code}`);
   };
 
+  const handleDeletePastSchedules = async () => {
+    if (!confirm('지나간 모든 일정을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+      return;
+    }
+
+    setDeletingPast(true);
+    try {
+      const count = await deletePastSchedules();
+      alert(`${count}개의 지나간 일정이 삭제되었습니다.`);
+    } catch (error) {
+      alert('일정 삭제 실패');
+    } finally {
+      setDeletingPast(false);
+    }
+  };
+
   return (
     <div className="page admin-page">
       <h2 className="page-title">관리자 페이지</h2>
+
+      <section className="admin-section">
+        <h3>일정 관리</h3>
+        <div className="schedule-management">
+          <button
+            className="btn btn-danger"
+            onClick={handleDeletePastSchedules}
+            disabled={deletingPast}
+          >
+            {deletingPast ? '삭제 중...' : '지나간 일정 모두 삭제'}
+          </button>
+          <p className="hint-text">* 현재 시간 기준 지나간 모든 일정을 삭제합니다.</p>
+        </div>
+      </section>
 
       <section className="admin-section">
         <h3>새 사용자 생성</h3>

@@ -195,7 +195,7 @@ const CreateSchedulePage: React.FC = () => {
             onChange={(e) => setMaxMembers(Number(e.target.value))}
             className="form-input"
           >
-            {[4, 6, 8, 10, 12, 16, 20].map((num) => (
+            {[4, 8].map((num) => (
               <option key={num} value={num}>
                 {num}명
               </option>

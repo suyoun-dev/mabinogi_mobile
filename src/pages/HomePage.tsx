@@ -6,7 +6,7 @@ import type { JobClass, ContentType } from '../types';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
-  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule } = useSchedules();
+  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly } = useSchedules();
   const { selectedCharacter } = useUser();
   const [filter, setFilter] = useState<ContentType | 'all'>('all');
 
@@ -36,6 +36,14 @@ const HomePage: React.FC = () => {
 
   const handleDelete = async (scheduleId: string) => {
     await deleteSchedule(scheduleId);
+  };
+
+  const handleRemoveMember = async (scheduleId: string, characterId: string) => {
+    await removeMember(scheduleId, characterId);
+  };
+
+  const handleAddMemberDirectly = async (scheduleId: string, nickname: string, job: string) => {
+    await addMemberDirectly(scheduleId, nickname, job);
   };
 
   if (loading) {
@@ -84,6 +92,8 @@ const HomePage: React.FC = () => {
               onLeave={handleLeave}
               onToggleClosed={handleToggleClosed}
               onDelete={handleDelete}
+              onRemoveMember={handleRemoveMember}
+              onAddMemberDirectly={handleAddMemberDirectly}
             />
           ))}
         </div>
