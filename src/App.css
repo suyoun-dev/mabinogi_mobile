@@ -1,0 +1,16 @@
+.app {
+  min-height: 100vh;
+  background: #0f0f23;
+}
+
+.main-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 반응형 */
+@media (max-width: 640px) {
+  .main-content {
+    max-width: 100%;
+  }
+}

@@ -1,0 +1,217 @@
+.characters-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.characters-page .page-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.btn-add {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+}
+
+.character-form {
+  background: #1f1f3a;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.character-form h3 {
+  color: #fff;
+  font-size: 1.1rem;
+  margin: 0 0 20px 0;
+}
+
+.character-form .form-group {
+  margin-bottom: 16px;
+}
+
+.character-form .form-group label {
+  display: block;
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+
+.character-form .form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: #16213e;
+  color: #fff;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.character-form .form-input:focus {
+  outline: none;
+  border-color: #e94560;
+}
+
+.job-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.job-btn {
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: transparent;
+  color: #888;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.job-btn:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.job-btn.selected {
+  background: linear-gradient(135deg, #e94560 0%, #c73e54 100%);
+  border-color: #e94560;
+  color: #fff;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-actions .btn {
+  flex: 1;
+  padding: 12px;
+}
+
+.character-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.character-card {
+  background: #1f1f3a;
+  border-radius: 12px;
+  padding: 16px;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.character-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.character-card.selected {
+  border-color: #e94560;
+  background: linear-gradient(135deg, rgba(233, 69, 96, 0.1) 0%, rgba(199, 62, 84, 0.1) 100%);
+}
+
+.character-info {
+  cursor: pointer;
+}
+
+.character-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.character-nickname {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.selected-badge {
+  background: #e94560;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
+.character-jobs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.job-tag {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+}
+
+.character-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn.edit {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.action-btn.edit:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.action-btn.delete {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+}
+
+.action-btn.delete:hover {
+  background: rgba(220, 53, 69, 0.3);
+}
+
+.characters-page .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.characters-page .empty-state p {
+  color: #666;
+  margin: 0;
+}
+
+.characters-page .empty-state .sub {
+  margin-top: 8px;
+  font-size: 0.85rem;
+}
+
+.hint {
+  text-align: center;
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 20px;
+}

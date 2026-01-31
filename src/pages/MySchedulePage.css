@@ -1,0 +1,46 @@
+.my-schedule-page .my-schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.my-schedule-page .page-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.my-schedule-page .character-name {
+  background: rgba(233, 69, 96, 0.2);
+  color: #e94560;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.my-schedule-page .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.my-schedule-page .empty-state p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.my-schedule-page .no-character {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.my-schedule-page .no-character h2 {
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.my-schedule-page .no-character p {
+  color: #888;
+  margin-bottom: 24px;
+}
