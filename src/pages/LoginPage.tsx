@@ -60,8 +60,10 @@ const LoginPage: React.FC = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-        <h1 className="login-title">마비노기M 일정</h1>
-        <p className="login-subtitle">어비스 & 레이드 파티 관리</p>
+        <div className="logo-container">
+          <img src="/saenyeok_title.png" alt="새녘" className="logo-image" />
+        </div>
+        <p className="login-subtitle">모비노기 어비스 & 레이드 파티 관리</p>
 
         <div className="mode-tabs">
           <button

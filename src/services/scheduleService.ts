@@ -203,3 +203,109 @@ export const getMySchedules = (
     return false;
   });
 };
+
+// 파티원 제거 (파티장 또는 관리자용)
+export const removeMember = async (
+  scheduleId: string,
+  characterId: string
+): Promise<boolean> => {
+  const schedule = await getScheduleById(scheduleId);
+
+  if (!schedule) {
+    throw new Error('일정을 찾을 수 없습니다.');
+  }
+
+  const currentMembers = schedule.members || [];
+  const updatedMembers = currentMembers.filter(
+    (m) => m.characterId !== characterId
+  );
+
+  if (updatedMembers.length === currentMembers.length) {
+    throw new Error('해당 멤버를 찾을 수 없습니다.');
+  }
+
+  await updateSchedule(scheduleId, { members: updatedMembers });
+
+  return true;
+};
+
+// 지나간 일정 삭제 (관리자용)
+export const deletePastSchedules = async (): Promise<number> => {
+  const schedules = await getAllSchedules();
+  const now = new Date();
+  let deletedCount = 0;
+
+  for (const schedule of schedules) {
+    const scheduleDateTime = new Date(`${schedule.date}T${schedule.time}`);
+    if (scheduleDateTime < now) {
+      await deleteSchedule(schedule.id);
+      deletedCount++;
+    }
+  }
+
+  return deletedCount;
+};
+
+// 파티원 직접 추가 (관리자/파티장용 - 캐릭터 없이 직접 입력)
+export const addMemberDirectly = async (
+  scheduleId: string,
+  nickname: string,
+  job: string
+): Promise<boolean> => {
+  const schedule = await getScheduleById(scheduleId);
+
+  if (!schedule) {
+    throw new Error('일정을 찾을 수 없습니다.');
+  }
+
+  const currentMembers = schedule.members || [];
+
+  // 인원 확인 (파티장 포함)
+  if (currentMembers.length >= schedule.maxMembers - 1) {
+    throw new Error('파티 인원이 가득 찼습니다.');
+  }
+
+  const newMember: PartyMember = {
+    characterId: `manual_${Date.now()}`, // 수동 추가된 멤버는 고유 ID 생성
+    nickname,
+    job: job as PartyMember['job'],
+    joinedAt: Date.now(),
+  };
+
+  const updatedMembers = [...currentMembers, newMember];
+  await updateSchedule(scheduleId, { members: updatedMembers });
+
+  return true;
+};
+
+// 파티원 직업 변경 (미정 -> 실제 직업)
+export const updateMemberJob = async (
+  scheduleId: string,
+  characterId: string,
+  newJob: string
+): Promise<boolean> => {
+  const schedule = await getScheduleById(scheduleId);
+
+  if (!schedule) {
+    throw new Error('일정을 찾을 수 없습니다.');
+  }
+
+  const currentMembers = schedule.members || [];
+  const memberIndex = currentMembers.findIndex(
+    (m) => m.characterId === characterId
+  );
+
+  if (memberIndex === -1) {
+    throw new Error('해당 멤버를 찾을 수 없습니다.');
+  }
+
+  const updatedMembers = [...currentMembers];
+  updatedMembers[memberIndex] = {
+    ...updatedMembers[memberIndex],
+    job: newJob as PartyMember['job'],
+  };
+
+  await updateSchedule(scheduleId, { members: updatedMembers });
+
+  return true;
+};

@@ -94,6 +94,56 @@ export const useSchedules = () => {
     [schedules]
   );
 
+  const removeMember = useCallback(
+    async (scheduleId: string, characterId: string) => {
+      try {
+        setError(null);
+        await scheduleService.removeMember(scheduleId, characterId);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '멤버 제거 실패');
+        throw err;
+      }
+    },
+    []
+  );
+
+  const deletePastSchedules = useCallback(async () => {
+    try {
+      setError(null);
+      const count = await scheduleService.deletePastSchedules();
+      return count;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '지나간 일정 삭제 실패');
+      throw err;
+    }
+  }, []);
+
+  const addMemberDirectly = useCallback(
+    async (scheduleId: string, nickname: string, job: string) => {
+      try {
+        setError(null);
+        await scheduleService.addMemberDirectly(scheduleId, nickname, job);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '멤버 추가 실패');
+        throw err;
+      }
+    },
+    []
+  );
+
+  const updateMemberJob = useCallback(
+    async (scheduleId: string, characterId: string, newJob: string) => {
+      try {
+        setError(null);
+        await scheduleService.updateMemberJob(scheduleId, characterId, newJob);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '직업 변경 실패');
+        throw err;
+      }
+    },
+    []
+  );
+
   return {
     schedules,
     loading,
@@ -105,5 +155,9 @@ export const useSchedules = () => {
     leaveParty,
     toggleClosed,
     getMySchedules,
+    removeMember,
+    deletePastSchedules,
+    addMemberDirectly,
+    updateMemberJob,
   };
 };

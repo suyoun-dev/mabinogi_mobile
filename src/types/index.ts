@@ -19,7 +19,8 @@ export type JobClass =
   | '힐러'
   | '사제'
   | '수도사'
-  | '암흑술사';
+  | '암흑술사'
+  | '미정';
 
 // 컨텐츠 종류
 export type ContentType = '어비스' | '레이드';
@@ -68,6 +69,7 @@ export interface Schedule {
   isClosed: boolean; // 마감 여부
   leaderId: string; // 파티장 캐릭터 ID
   leaderNickname: string; // 파티장 닉네임
+  leaderJob?: JobClass; // 파티장 직업 (별도 저장)
   members: PartyMember[]; // 멤버 목록
   maxMembers: number; // 최대 인원
   note: string; // 비고
@@ -104,6 +106,12 @@ export const JOB_LIST: JobClass[] = [
   '사제',
   '수도사',
   '암흑술사',
+];
+
+// 직업 목록 (미정 포함 - 파티 신청용)
+export const JOB_LIST_WITH_UNDECIDED: JobClass[] = [
+  ...JOB_LIST,
+  '미정',
 ];
 
 // 난이도 목록

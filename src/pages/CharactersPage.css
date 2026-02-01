@@ -13,12 +13,13 @@
 }
 
 .btn-add {
-  padding: 8px 16px;
-  font-size: 0.9rem;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
 }
 
 .character-form {
-  background: #1f1f3a;
+  background: rgba(10, 38, 71, 0.8);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -47,7 +48,7 @@
   padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  background: #16213e;
+  background: #0a2647;
   color: #fff;
   font-size: 1rem;
   box-sizing: border-box;
@@ -55,7 +56,7 @@
 
 .character-form .form-input:focus {
   outline: none;
-  border-color: #e94560;
+  border-color: #FF8E8E;
 }
 
 .job-grid {
@@ -81,8 +82,8 @@
 }
 
 .job-btn.selected {
-  background: linear-gradient(135deg, #e94560 0%, #c73e54 100%);
-  border-color: #e94560;
+  background: linear-gradient(135deg, #FF8E8E 0%, #d07070 100%);
+  border-color: #FF8E8E;
   color: #fff;
 }
 
@@ -104,7 +105,7 @@
 }
 
 .character-card {
-  background: #1f1f3a;
+  background: rgba(10, 38, 71, 0.8);
   border-radius: 12px;
   padding: 16px;
   border: 2px solid transparent;
@@ -116,8 +117,8 @@
 }
 
 .character-card.selected {
-  border-color: #e94560;
-  background: linear-gradient(135deg, rgba(233, 69, 96, 0.1) 0%, rgba(199, 62, 84, 0.1) 100%);
+  border-color: #FF8E8E;
+  background: linear-gradient(135deg, rgba(255, 142, 142, 0.1) 0%, rgba(199, 62, 84, 0.1) 100%);
 }
 
 .character-info {
@@ -138,7 +139,7 @@
 }
 
 .selected-badge {
-  background: #e94560;
+  background: #FF8E8E;
   color: #fff;
   padding: 3px 8px;
   border-radius: 4px;
