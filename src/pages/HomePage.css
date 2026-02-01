@@ -111,3 +111,42 @@
   flex-direction: column;
   gap: 12px;
 }
+
+/* 검색 결과 액션 */
+.search-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255, 142, 142, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 142, 142, 0.3);
+}
+
+.search-result-count {
+  font-size: 0.9rem;
+  color: #FF8E8E;
+  font-weight: 500;
+}
+
+.btn-save-search {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save-search:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(23, 162, 184, 0.4);
+}
+
+.btn-save-search:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

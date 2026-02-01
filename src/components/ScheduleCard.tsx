@@ -26,6 +26,7 @@ interface ScheduleCardProps {
   onAddMemberDirectly?: (scheduleId: string, nickname: string, job: string) => Promise<void>;
   onUpdateMemberJob?: (scheduleId: string, characterId: string, newJob: JobClass) => Promise<void>;
   onEditSchedule?: (scheduleId: string, updates: ScheduleEditData) => Promise<void>;
+  onCopySchedule?: (schedule: Schedule) => void;
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({
@@ -38,6 +39,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onAddMemberDirectly,
   onUpdateMemberJob,
   onEditSchedule,
+  onCopySchedule,
 }) => {
   const { selectedCharacter } = useUser();
   const { user } = useAuth();
@@ -74,11 +76,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   };
 
   const isLeader = selectedCharacter?.id === schedule.leaderId;
+  const isCreator = user?.id === schedule.createdBy; // 일정 생성자 확인
   const isMember = schedule.members?.some(
     (m) => m.characterId === selectedCharacter?.id
   );
   const currentCount = (schedule.members?.length || 0) + 1; // 파티장 포함
   const isFull = currentCount >= schedule.maxMembers;
+  const isEffectivelyClosed = schedule.isClosed || isPastSchedule; // 지난 일정은 자동 마감
+  const canEdit = isAdmin || isLeader || isCreator; // 수정 권한: 관리자, 파티장, 생성자
 
   const handleJoin = async (job: JobClass) => {
     if (!selectedCharacter) return;
@@ -299,7 +304,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       )}
 
       {/* 일정 수정 폼 (관리자/파티장용) - 관리자는 캐릭터 없이도 가능 */}
-      {(isAdmin || (selectedCharacter && isLeader)) && showEditForm && onEditSchedule && (
+      {canEdit && showEditForm && onEditSchedule && (
         <div className="edit-schedule-form">
           <div className="edit-form-header">
             <span className="label">일정 수정</span>
@@ -403,7 +408,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       )}
 
       {/* 파티원 직접 추가 폼 (관리자/파티장용) - 관리자는 캐릭터 없이도 가능 */}
-      {(isAdmin || (selectedCharacter && isLeader)) && showAddMember && onAddMemberDirectly && !isFull && (
+      {canEdit && showAddMember && onAddMemberDirectly && !isFull && (
         <div className="add-member-form">
           <div className="add-member-header">
             <span className="label">파티원 직접 추가</span>
@@ -447,8 +452,20 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       )}
 
       <div className="schedule-actions">
-        {/* 관리자는 캐릭터 없이도 수정 가능 */}
-        {isAdmin && !selectedCharacter ? (
+        {/* 복사 버튼 - 모든 사용자 가능 */}
+        {onCopySchedule && (
+          <button
+            className="btn btn-outline"
+            onClick={() => onCopySchedule(schedule)}
+            disabled={loading}
+            title="일정 복사"
+          >
+            복사
+          </button>
+        )}
+
+        {/* 수정 권한이 있는 경우 (관리자, 파티장, 생성자) */}
+        {canEdit ? (
           <>
             {onEditSchedule && (
               <button
@@ -459,7 +476,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 수정
               </button>
             )}
-            {!isFull && onAddMemberDirectly && (
+            {!isFull && !isEffectivelyClosed && onAddMemberDirectly && (
               <button
                 className="btn btn-secondary"
                 onClick={() => setShowAddMember(!showAddMember)}
@@ -468,51 +485,15 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 {showAddMember ? '취소' : '파티원 추가'}
               </button>
             )}
-            <button
-              className="btn btn-secondary"
-              onClick={handleToggleClosed}
-              disabled={loading}
-            >
-              {schedule.isClosed ? '마감 해제' : '마감하기'}
-            </button>
-            <button
-              className="btn btn-danger"
-              onClick={handleDelete}
-              disabled={loading}
-            >
-              삭제
-            </button>
-            <span className="admin-badge">관리자</span>
-          </>
-        ) : !selectedCharacter ? (
-          <p className="no-character-msg">캐릭터를 먼저 등록해주세요</p>
-        ) : isLeader || isAdmin ? (
-          <>
-            {onEditSchedule && (
-              <button
-                className="btn btn-info"
-                onClick={handleOpenEditForm}
-                disabled={loading}
-              >
-                수정
-              </button>
-            )}
-            {!isFull && onAddMemberDirectly && (
+            {!isPastSchedule && (
               <button
                 className="btn btn-secondary"
-                onClick={() => setShowAddMember(!showAddMember)}
+                onClick={handleToggleClosed}
                 disabled={loading}
               >
-                {showAddMember ? '취소' : '파티원 추가'}
+                {schedule.isClosed ? '마감 해제' : '마감하기'}
               </button>
             )}
-            <button
-              className="btn btn-secondary"
-              onClick={handleToggleClosed}
-              disabled={loading}
-            >
-              {schedule.isClosed ? '마감 해제' : '마감하기'}
-            </button>
             <button
               className="btn btn-danger"
               onClick={handleDelete}
@@ -520,10 +501,12 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
             >
               삭제
             </button>
-            {isAdmin && !isLeader && (
+            {isAdmin && !isLeader && !isCreator && (
               <span className="admin-badge">관리자</span>
             )}
           </>
+        ) : !selectedCharacter ? (
+          <p className="no-character-msg">캐릭터를 먼저 등록해주세요</p>
         ) : isMember ? (
           <button
             className="btn btn-danger"
@@ -532,9 +515,9 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           >
             탈퇴하기
           </button>
-        ) : schedule.isClosed || isFull ? (
+        ) : isEffectivelyClosed || isFull ? (
           <button className="btn btn-disabled" disabled>
-            {schedule.isClosed ? '마감됨' : '인원 마감'}
+            {isPastSchedule ? '종료됨' : schedule.isClosed ? '마감됨' : '인원 마감'}
           </button>
         ) : showJobSelect ? (
           <div className="job-select-container">
@@ -542,17 +525,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
               className="job-select"
               onChange={(e) => handleJoin(e.target.value as JobClass)}
               disabled={loading}
-              defaultValue=""
+              defaultValue="미정"
             >
-              <option value="" disabled>
-                직업 선택
-              </option>
+              <option value="미정">미정 (추후 결정)</option>
               {selectedCharacter.jobs.map((job) => (
                 <option key={job} value={job}>
                   {job}
                 </option>
               ))}
-              <option value="미정">미정 (추후 결정)</option>
             </select>
             <button
               className="btn btn-secondary"

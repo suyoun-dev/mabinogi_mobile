@@ -1,18 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSchedules } from '../hooks/useSchedules';
 import * as authService from '../services/authService';
-import type { UserAccount } from '../types';
+import * as characterService from '../services/characterService';
+import type { UserAccount, Character, ContentType, DifficultyType, JobClass } from '../types';
+import { CONTENT_LIST } from '../types';
 import './AdminPage.css';
 
 const AdminPage: React.FC = () => {
   const { user } = useAuth();
-  const { deletePastSchedules } = useSchedules();
+  const { deletePastSchedules, createSchedule } = useSchedules();
   const [users, setUsers] = useState<UserAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [newNickname, setNewNickname] = useState('');
   const [creating, setCreating] = useState(false);
   const [deletingPast, setDeletingPast] = useState(false);
+
+  // 캐릭터 조회 관련
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [userCharacters, setUserCharacters] = useState<Character[]>([]);
+  const [loadingChars, setLoadingChars] = useState(false);
+
+  // 엑셀 업로드 관련
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingExcel, setUploadingExcel] = useState(false);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -86,6 +97,129 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  // 사용자 캐릭터 조회
+  const handleViewCharacters = async (userId: string) => {
+    if (selectedUserId === userId) {
+      setSelectedUserId(null);
+      setUserCharacters([]);
+      return;
+    }
+
+    setSelectedUserId(userId);
+    setLoadingChars(true);
+    try {
+      const chars = await characterService.getCharactersByUserId(userId);
+      setUserCharacters(chars);
+    } catch (error) {
+      alert('캐릭터 조회 실패');
+      setUserCharacters([]);
+    } finally {
+      setLoadingChars(false);
+    }
+  };
+
+  // 엑셀/CSV 파일 업로드 처리
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploadingExcel(true);
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+
+      if (lines.length < 2) {
+        alert('데이터가 없습니다. 헤더와 데이터를 포함해주세요.');
+        return;
+      }
+
+      // CSV 파싱 (헤더: 날짜,시간,종류,컨텐츠,난이도,제목,최대인원,파티장,파티장직업,비고)
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const dateIdx = headers.findIndex(h => h.includes('날짜') || h === 'date');
+      const timeIdx = headers.findIndex(h => h.includes('시간') || h === 'time');
+      const typeIdx = headers.findIndex(h => h.includes('종류') || h === 'type');
+      const contentIdx = headers.findIndex(h => h.includes('컨텐츠') || h === 'content');
+      const diffIdx = headers.findIndex(h => h.includes('난이도') || h === 'difficulty');
+      const titleIdx = headers.findIndex(h => h.includes('제목') || h === 'title');
+      const maxIdx = headers.findIndex(h => h.includes('인원') || h === 'max');
+      const leaderIdx = headers.findIndex(h => h.includes('파티장') || h === 'leader');
+      const jobIdx = headers.findIndex(h => h.includes('직업') || h === 'job');
+      const noteIdx = headers.findIndex(h => h.includes('비고') || h === 'note');
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',').map(c => c.trim());
+
+        try {
+          const date = cols[dateIdx] || '';
+          const time = cols[timeIdx] || '21:00';
+          const type = (cols[typeIdx] as ContentType) || '어비스';
+          const contentName = cols[contentIdx] || CONTENT_LIST[type][0];
+          const difficulty = (cols[diffIdx] as DifficultyType) || '어려움';
+          const title = cols[titleIdx] || `${contentName} ${difficulty}`;
+          const maxMembers = parseInt(cols[maxIdx]) || 8;
+          const leaderNickname = cols[leaderIdx] || '미정';
+          const leaderJob = (cols[jobIdx] as JobClass) || '미정';
+          const note = cols[noteIdx] || '';
+
+          // 날짜 유효성 검사
+          if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            errorCount++;
+            continue;
+          }
+
+          await createSchedule({
+            type,
+            contentName,
+            difficulty,
+            title,
+            date,
+            time,
+            maxMembers,
+            note,
+            isClosed: false,
+            leaderId: `excel_${Date.now()}_${i}`,
+            leaderNickname: `${leaderNickname} (${leaderJob})`,
+            leaderJob,
+            members: [],
+            createdBy: user.id,
+          });
+
+          successCount++;
+        } catch {
+          errorCount++;
+        }
+      }
+
+      alert(`업로드 완료!\n성공: ${successCount}개\n실패: ${errorCount}개`);
+    } catch (error) {
+      alert('파일 처리 중 오류가 발생했습니다.');
+      console.error(error);
+    } finally {
+      setUploadingExcel(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // 샘플 CSV 다운로드
+  const downloadSampleCsv = () => {
+    const sample = `날짜,시간,종류,컨텐츠,난이도,제목,최대인원,파티장,파티장직업,비고
+2026-02-01,21:00,어비스,바리 어비스,어려움,바리 1파티,8,파티장닉네임,전사,비고내용
+2026-02-02,22:00,레이드,글라스기브넨,매우 어려움,글라스 2파티,8,파티장닉네임2,힐러,`;
+
+    const blob = new Blob(['\uFEFF' + sample], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'schedule_sample.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="page admin-page">
       <h2 className="page-title">관리자 페이지</h2>
@@ -101,6 +235,36 @@ const AdminPage: React.FC = () => {
             {deletingPast ? '삭제 중...' : '지나간 일정 모두 삭제'}
           </button>
           <p className="hint-text">* 현재 시간 기준 지나간 모든 일정을 삭제합니다.</p>
+        </div>
+      </section>
+
+      <section className="admin-section">
+        <h3>엑셀 일정 업로드</h3>
+        <div className="excel-upload-section">
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept=".csv,.txt"
+            onChange={handleExcelUpload}
+            style={{ display: 'none' }}
+          />
+          <div className="excel-buttons">
+            <button
+              className="btn btn-primary"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingExcel}
+            >
+              {uploadingExcel ? '업로드 중...' : 'CSV 파일 업로드'}
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={downloadSampleCsv}
+            >
+              샘플 CSV 다운로드
+            </button>
+          </div>
+          <p className="hint-text">* CSV 형식으로 일정을 일괄 등록할 수 있습니다.</p>
+          <p className="hint-text">* 날짜 형식: YYYY-MM-DD (예: 2026-02-01)</p>
         </div>
       </section>
 
@@ -130,27 +294,58 @@ const AdminPage: React.FC = () => {
         ) : (
           <div className="user-list">
             {users.map((u) => (
-              <div key={u.id} className={`user-card ${u.role === 'admin' ? 'admin' : ''}`}>
-                <div className="user-info">
-                  <div className="user-header">
-                    <span className="user-nickname">{u.nickname}</span>
-                    {u.role === 'admin' && <span className="admin-badge">관리자</span>}
+              <div key={u.id} className="user-card-wrapper">
+                <div className={`user-card ${u.role === 'admin' ? 'admin' : ''}`}>
+                  <div className="user-info">
+                    <div className="user-header">
+                      <span className="user-nickname">{u.nickname}</span>
+                      {u.role === 'admin' && <span className="admin-badge">관리자</span>}
+                    </div>
+                    <div className="user-code" onClick={() => copyCode(u.code)}>
+                      코드: <strong>{u.code}</strong>
+                      <span className="copy-hint">(클릭하여 복사)</span>
+                    </div>
+                    <div className="user-date">
+                      가입: {new Date(u.createdAt).toLocaleDateString('ko-KR')}
+                    </div>
                   </div>
-                  <div className="user-code" onClick={() => copyCode(u.code)}>
-                    코드: <strong>{u.code}</strong>
-                    <span className="copy-hint">(클릭하여 복사)</span>
-                  </div>
-                  <div className="user-date">
-                    가입: {new Date(u.createdAt).toLocaleDateString('ko-KR')}
+                  <div className="user-actions">
+                    <button
+                      className="btn btn-info btn-small"
+                      onClick={() => handleViewCharacters(u.id)}
+                    >
+                      {selectedUserId === u.id ? '접기' : '캐릭터'}
+                    </button>
+                    {u.role !== 'admin' && (
+                      <button
+                        className="btn btn-danger btn-small"
+                        onClick={() => handleDeleteUser(u)}
+                      >
+                        삭제
+                      </button>
+                    )}
                   </div>
                 </div>
-                {u.role !== 'admin' && (
-                  <button
-                    className="btn btn-danger btn-small"
-                    onClick={() => handleDeleteUser(u)}
-                  >
-                    삭제
-                  </button>
+                {/* 캐릭터 목록 표시 */}
+                {selectedUserId === u.id && (
+                  <div className="user-characters">
+                    {loadingChars ? (
+                      <p className="loading-text">캐릭터 로딩 중...</p>
+                    ) : userCharacters.length === 0 ? (
+                      <p className="empty-text">등록된 캐릭터가 없습니다.</p>
+                    ) : (
+                      <div className="character-list">
+                        {userCharacters.map((char) => (
+                          <div key={char.id} className="character-item">
+                            <span className="char-nickname">{char.nickname}</span>
+                            <span className="char-jobs">
+                              {char.jobs.join(', ')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             ))}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
@@ -22,15 +22,35 @@ const CreateSchedulePage: React.FC = () => {
   const [time, setTime] = useState('21:00');
   const [maxMembers, setMaxMembers] = useState(8);
   const [note, setNote] = useState('');
-  const [leaderJob, setLeaderJob] = useState<JobClass | ''>('');
+  const [leaderJob, setLeaderJob] = useState<JobClass | ''>('미정');
   const [loading, setLoading] = useState(false);
 
   // 관리자용: 파티장 직접 입력 모드
   const [useCustomLeader, setUseCustomLeader] = useState(false);
   const [customLeaderNickname, setCustomLeaderNickname] = useState('');
-  const [customLeaderJob, setCustomLeaderJob] = useState<JobClass | ''>('');
+  const [customLeaderJob, setCustomLeaderJob] = useState<JobClass | ''>('미정');
 
   const isAdmin = user?.role === 'admin';
+
+  // 복사된 일정 데이터 적용
+  useEffect(() => {
+    const copyDataStr = sessionStorage.getItem('copyScheduleData');
+    if (copyDataStr) {
+      try {
+        const copyData = JSON.parse(copyDataStr);
+        if (copyData.type) setType(copyData.type);
+        if (copyData.contentName) setContentName(copyData.contentName);
+        if (copyData.difficulty) setDifficulty(copyData.difficulty);
+        if (copyData.title) setTitle(copyData.title);
+        if (copyData.maxMembers) setMaxMembers(copyData.maxMembers);
+        if (copyData.note) setNote(copyData.note);
+      } catch {
+        console.error('복사 데이터 파싱 실패');
+      }
+      // 사용 후 삭제
+      sessionStorage.removeItem('copyScheduleData');
+    }
+  }, []);
 
   const handleTypeChange = (newType: ContentType) => {
     setType(newType);

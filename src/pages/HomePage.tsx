@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
 import ScheduleCard from '../components/ScheduleCard';
-import type { JobClass, ContentType, DifficultyType } from '../types';
+import type { Schedule, JobClass, ContentType, DifficultyType } from '../types';
+import html2canvas from 'html2canvas';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
+  const navigate = useNavigate();
   const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob, updateSchedule } = useSchedules();
   const { selectedCharacter } = useUser();
   const [filter, setFilter] = useState<ContentType | 'all'>('all');
   const [searchNickname, setSearchNickname] = useState('');
+  const [savingImage, setSavingImage] = useState(false);
+  const scheduleListRef = useRef<HTMLDivElement>(null);
 
   const filteredSchedules = schedules.filter((schedule) => {
     // 타입 필터
@@ -67,6 +72,44 @@ const HomePage: React.FC = () => {
     await updateSchedule(scheduleId, updates);
   };
 
+  // 파티 복사 - 복사된 정보를 가지고 일정 등록 페이지로 이동
+  const handleCopySchedule = (schedule: Schedule) => {
+    const copyData = {
+      type: schedule.type,
+      contentName: schedule.contentName,
+      difficulty: schedule.difficulty,
+      title: schedule.title,
+      maxMembers: schedule.maxMembers,
+      note: schedule.note || '',
+    };
+    // sessionStorage에 복사 데이터 저장
+    sessionStorage.setItem('copyScheduleData', JSON.stringify(copyData));
+    navigate('/create');
+  };
+
+  // 검색 결과 이미지로 저장
+  const handleSaveSearchResults = async () => {
+    if (!scheduleListRef.current || filteredSchedules.length === 0) return;
+
+    setSavingImage(true);
+    try {
+      const canvas = await html2canvas(scheduleListRef.current, {
+        backgroundColor: '#0a2647',
+        scale: 2,
+      });
+
+      const link = document.createElement('a');
+      link.download = `${searchNickname}_일정_${new Date().toLocaleDateString('ko-KR')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      alert('이미지 저장에 실패했습니다.');
+      console.error(error);
+    } finally {
+      setSavingImage(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="page loading">
@@ -87,14 +130,32 @@ const HomePage: React.FC = () => {
           onChange={(e) => setSearchNickname(e.target.value)}
         />
         {searchNickname && (
-          <button
-            className="search-clear"
-            onClick={() => setSearchNickname('')}
-          >
-            ×
-          </button>
+          <>
+            <button
+              className="search-clear"
+              onClick={() => setSearchNickname('')}
+            >
+              ×
+            </button>
+          </>
         )}
       </div>
+
+      {/* 검색 결과 저장 버튼 */}
+      {searchNickname.trim() && filteredSchedules.length > 0 && (
+        <div className="search-actions">
+          <span className="search-result-count">
+            "{searchNickname}" 검색 결과: {filteredSchedules.length}개
+          </span>
+          <button
+            className="btn btn-save-search"
+            onClick={handleSaveSearchResults}
+            disabled={savingImage}
+          >
+            {savingImage ? '저장 중...' : '이미지로 저장'}
+          </button>
+        </div>
+      )}
 
       <div className="filter-tabs">
         <button
@@ -122,7 +183,7 @@ const HomePage: React.FC = () => {
           <p>등록된 일정이 없습니다</p>
         </div>
       ) : (
-        <div className="schedule-list">
+        <div className="schedule-list" ref={scheduleListRef}>
           {filteredSchedules.map((schedule) => (
             <ScheduleCard
               key={schedule.id}
@@ -135,6 +196,7 @@ const HomePage: React.FC = () => {
               onAddMemberDirectly={handleAddMemberDirectly}
               onUpdateMemberJob={handleUpdateMemberJob}
               onEditSchedule={handleEditSchedule}
+              onCopySchedule={handleCopySchedule}
             />
           ))}
         </div>

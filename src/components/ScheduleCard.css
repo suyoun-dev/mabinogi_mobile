@@ -12,12 +12,12 @@
 }
 
 .schedule-card.closed {
-  opacity: 0.7;
-  background: rgba(10, 38, 71, 0.5);
+  /* 마감된 일정은 흐리게 표시하지 않음 */
 }
 
 .schedule-card.past {
-  opacity: 0.5;
+  opacity: 0.6;
+  background: rgba(10, 38, 71, 0.5);
 }
 
 .schedule-header {
@@ -295,6 +295,17 @@
 .btn-disabled {
   background: #4a4a4a;
   color: #888;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #aaa;
+}
+
+.btn-outline:hover:not(:disabled) {
+  border-color: #FF8E8E;
+  color: #FF8E8E;
 }
 
 .job-select-container {

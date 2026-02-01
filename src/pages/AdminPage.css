@@ -145,3 +145,85 @@
   font-size: 0.85rem;
   margin: 0;
 }
+
+/* 엑셀 업로드 섹션 */
+.excel-upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.excel-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.excel-buttons .btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 16px;
+}
+
+/* 사용자 카드 래퍼 */
+.user-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.user-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 캐릭터 목록 */
+.user-characters {
+  background: rgba(23, 162, 184, 0.1);
+  border: 1px solid rgba(23, 162, 184, 0.3);
+  border-radius: 0 0 10px 10px;
+  border-top: none;
+  padding: 12px;
+  margin-top: -8px;
+}
+
+.user-characters .loading-text,
+.user-characters .empty-text {
+  padding: 8px;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.character-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.character-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.char-nickname {
+  font-weight: 600;
+  color: #fff;
+}
+
+.char-jobs {
+  font-size: 0.8rem;
+  color: #17a2b8;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+}
