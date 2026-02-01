@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import type { Schedule, JobClass } from '../types';
-import { JOB_LIST, JOB_LIST_WITH_UNDECIDED } from '../types';
+import type { Schedule, JobClass, DifficultyType } from '../types';
+import { JOB_LIST, JOB_LIST_WITH_UNDECIDED, DIFFICULTY_LIST } from '../types';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '../contexts/AuthContext';
 import { format, parseISO, isToday, isTomorrow, isPast } from 'date-fns';
@@ -13,6 +13,7 @@ interface ScheduleEditData {
   time: string;
   maxMembers: number;
   note: string;
+  difficulty: DifficultyType;
 }
 
 interface ScheduleCardProps {
@@ -53,6 +54,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
     time: schedule.time,
     maxMembers: schedule.maxMembers,
     note: schedule.note || '',
+    difficulty: schedule.difficulty,
   });
 
   const isAdmin = user?.role === 'admin';
@@ -159,6 +161,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       time: schedule.time,
       maxMembers: schedule.maxMembers,
       note: schedule.note || '',
+      difficulty: schedule.difficulty,
     });
     setShowEditForm(true);
   };
@@ -338,19 +341,35 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 />
               </div>
             </div>
-            <div className="edit-form-group">
-              <label>최대 인원</label>
-              <select
-                value={editFormData.maxMembers}
-                onChange={(e) => setEditFormData({ ...editFormData, maxMembers: Number(e.target.value) })}
-                className="edit-form-input"
-              >
-                {[2, 3, 4, 5, 6, 7, 8].map((n) => (
-                  <option key={n} value={n}>
-                    {n}명
-                  </option>
-                ))}
-              </select>
+            <div className="edit-form-row">
+              <div className="edit-form-group">
+                <label>최대 인원</label>
+                <select
+                  value={editFormData.maxMembers}
+                  onChange={(e) => setEditFormData({ ...editFormData, maxMembers: Number(e.target.value) })}
+                  className="edit-form-input"
+                >
+                  {[2, 3, 4, 5, 6, 7, 8].map((n) => (
+                    <option key={n} value={n}>
+                      {n}명
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="edit-form-group">
+                <label>난이도</label>
+                <select
+                  value={editFormData.difficulty}
+                  onChange={(e) => setEditFormData({ ...editFormData, difficulty: e.target.value as DifficultyType })}
+                  className="edit-form-input"
+                >
+                  {DIFFICULTY_LIST.map((diff) => (
+                    <option key={diff} value={diff}>
+                      {diff}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             <div className="edit-form-group">
               <label>비고</label>

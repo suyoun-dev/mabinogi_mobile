@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
 import ScheduleCard from '../components/ScheduleCard';
-import type { JobClass, ContentType } from '../types';
+import type { JobClass, ContentType, DifficultyType } from '../types';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
@@ -63,7 +63,7 @@ const HomePage: React.FC = () => {
     await updateMemberJob(scheduleId, characterId, newJob);
   };
 
-  const handleEditSchedule = async (scheduleId: string, updates: { title: string; date: string; time: string; maxMembers: number; note: string }) => {
+  const handleEditSchedule = async (scheduleId: string, updates: { title: string; date: string; time: string; maxMembers: number; note: string; difficulty: DifficultyType }) => {
     await updateSchedule(scheduleId, updates);
   };
 
