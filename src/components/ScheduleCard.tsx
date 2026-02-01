@@ -7,6 +7,14 @@ import { format, parseISO, isToday, isTomorrow, isPast } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import './ScheduleCard.css';
 
+interface ScheduleEditData {
+  title: string;
+  date: string;
+  time: string;
+  maxMembers: number;
+  note: string;
+}
+
 interface ScheduleCardProps {
   schedule: Schedule;
   onJoin: (scheduleId: string, job: JobClass) => Promise<void>;
@@ -16,6 +24,7 @@ interface ScheduleCardProps {
   onRemoveMember?: (scheduleId: string, characterId: string) => Promise<void>;
   onAddMemberDirectly?: (scheduleId: string, nickname: string, job: string) => Promise<void>;
   onUpdateMemberJob?: (scheduleId: string, characterId: string, newJob: JobClass) => Promise<void>;
+  onEditSchedule?: (scheduleId: string, updates: ScheduleEditData) => Promise<void>;
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({
@@ -27,6 +36,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onRemoveMember,
   onAddMemberDirectly,
   onUpdateMemberJob,
+  onEditSchedule,
 }) => {
   const { selectedCharacter } = useUser();
   const { user } = useAuth();
@@ -36,6 +46,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   const [newMemberNickname, setNewMemberNickname] = useState('');
   const [newMemberJob, setNewMemberJob] = useState<string>('');
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editFormData, setEditFormData] = useState<ScheduleEditData>({
+    title: schedule.title,
+    date: schedule.date,
+    time: schedule.time,
+    maxMembers: schedule.maxMembers,
+    note: schedule.note || '',
+  });
 
   const isAdmin = user?.role === 'admin';
 
@@ -129,6 +147,34 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       setShowAddMember(false);
     } catch (error) {
       alert(error instanceof Error ? error.message : '멤버 추가 실패');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenEditForm = () => {
+    setEditFormData({
+      title: schedule.title,
+      date: schedule.date,
+      time: schedule.time,
+      maxMembers: schedule.maxMembers,
+      note: schedule.note || '',
+    });
+    setShowEditForm(true);
+  };
+
+  const handleEditSubmit = async () => {
+    if (!onEditSchedule) return;
+    if (!editFormData.title.trim()) {
+      alert('제목을 입력해주세요.');
+      return;
+    }
+    setLoading(true);
+    try {
+      await onEditSchedule(schedule.id, editFormData);
+      setShowEditForm(false);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '수정 실패');
     } finally {
       setLoading(false);
     }
@@ -249,6 +295,94 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         </div>
       )}
 
+      {/* 일정 수정 폼 (관리자/파티장용) */}
+      {(isAdmin || isLeader) && showEditForm && onEditSchedule && (
+        <div className="edit-schedule-form">
+          <div className="edit-form-header">
+            <span className="label">일정 수정</span>
+            <button
+              className="close-btn"
+              onClick={() => setShowEditForm(false)}
+            >
+              ×
+            </button>
+          </div>
+          <div className="edit-form-body">
+            <div className="edit-form-group">
+              <label>제목</label>
+              <input
+                type="text"
+                value={editFormData.title}
+                onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                className="edit-form-input"
+                maxLength={50}
+              />
+            </div>
+            <div className="edit-form-row">
+              <div className="edit-form-group">
+                <label>날짜</label>
+                <input
+                  type="date"
+                  value={editFormData.date}
+                  onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
+                  className="edit-form-input"
+                />
+              </div>
+              <div className="edit-form-group">
+                <label>시간</label>
+                <input
+                  type="time"
+                  value={editFormData.time}
+                  onChange={(e) => setEditFormData({ ...editFormData, time: e.target.value })}
+                  className="edit-form-input"
+                />
+              </div>
+            </div>
+            <div className="edit-form-group">
+              <label>최대 인원</label>
+              <select
+                value={editFormData.maxMembers}
+                onChange={(e) => setEditFormData({ ...editFormData, maxMembers: Number(e.target.value) })}
+                className="edit-form-input"
+              >
+                {[2, 3, 4, 5, 6, 7, 8].map((n) => (
+                  <option key={n} value={n}>
+                    {n}명
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="edit-form-group">
+              <label>비고</label>
+              <input
+                type="text"
+                value={editFormData.note}
+                onChange={(e) => setEditFormData({ ...editFormData, note: e.target.value })}
+                className="edit-form-input"
+                placeholder="선택사항"
+                maxLength={100}
+              />
+            </div>
+            <div className="edit-form-actions">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowEditForm(false)}
+                disabled={loading}
+              >
+                취소
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleEditSubmit}
+                disabled={loading}
+              >
+                {loading ? '저장 중...' : '저장'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 파티원 직접 추가 폼 (관리자/파티장용) */}
       {(isAdmin || isLeader) && showAddMember && onAddMemberDirectly && !isFull && (
         <div className="add-member-form">
@@ -298,6 +432,15 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           <p className="no-character-msg">캐릭터를 먼저 등록해주세요</p>
         ) : isLeader || isAdmin ? (
           <>
+            {onEditSchedule && (
+              <button
+                className="btn btn-info"
+                onClick={handleOpenEditForm}
+                disabled={loading}
+              >
+                수정
+              </button>
+            )}
             {!isFull && onAddMemberDirectly && (
               <button
                 className="btn btn-secondary"

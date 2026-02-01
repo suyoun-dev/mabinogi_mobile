@@ -405,3 +405,101 @@
   flex: 0 0 auto !important;
   padding: 10px 16px;
 }
+
+.btn-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
+}
+
+/* 일정 수정 폼 */
+.edit-schedule-form {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(23, 162, 184, 0.5);
+}
+
+.edit-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.edit-form-header .label {
+  font-size: 0.9rem;
+  color: #17a2b8;
+  font-weight: 600;
+}
+
+.edit-form-header .close-btn {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.edit-form-header .close-btn:hover {
+  color: #17a2b8;
+}
+
+.edit-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.edit-form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-form-row .edit-form-group {
+  flex: 1;
+}
+
+.edit-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.edit-form-group label {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.edit-form-input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0a2647;
+  color: #fff;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.edit-form-input:focus {
+  outline: none;
+  border-color: #17a2b8;
+}
+
+.edit-form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.edit-form-actions .btn {
+  flex: 1;
+}

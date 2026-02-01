@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
 import type { JobClass, Character } from '../types';
 import { JOB_LIST } from '../types';
+import * as scheduleService from '../services/scheduleService';
 import './CharactersPage.css';
 
 const CharactersPage: React.FC = () => {
@@ -10,12 +11,70 @@ const CharactersPage: React.FC = () => {
   const [editingChar, setEditingChar] = useState<Character | null>(null);
   const [nickname, setNickname] = useState('');
   const [selectedJobs, setSelectedJobs] = useState<JobClass[]>([]);
+  const [existingNicknames, setExistingNicknames] = useState<Set<string>>(new Set());
+  const [nicknameError, setNicknameError] = useState('');
+
+  // Firebase에서 기존 닉네임 목록 불러오기
+  useEffect(() => {
+    const loadExistingNicknames = async () => {
+      try {
+        const schedules = await scheduleService.getAllSchedules();
+        const nicknames = new Set<string>();
+
+        schedules.forEach(schedule => {
+          // 파티장 닉네임
+          if (schedule.leaderNickname) {
+            nicknames.add(schedule.leaderNickname.toLowerCase());
+          }
+          // 파티원 닉네임
+          schedule.members?.forEach(member => {
+            if (member.nickname) {
+              nicknames.add(member.nickname.toLowerCase());
+            }
+          });
+        });
+
+        setExistingNicknames(nicknames);
+      } catch (error) {
+        console.error('닉네임 목록 불러오기 실패:', error);
+      }
+    };
+
+    loadExistingNicknames();
+  }, []);
+
+  // 닉네임 중복 확인
+  const checkDuplicateNickname = (name: string): boolean => {
+    const trimmedName = name.trim().toLowerCase();
+
+    // 자신의 캐릭터 중 중복 확인 (수정 시 현재 캐릭터 제외)
+    const isDuplicateLocal = characters.some(char =>
+      char.nickname.toLowerCase() === trimmedName &&
+      (!editingChar || char.id !== editingChar.id)
+    );
+
+    // Firebase 일정에서 중복 확인 (수정 시 현재 닉네임 제외)
+    const isDuplicateGlobal = existingNicknames.has(trimmedName) &&
+      (!editingChar || editingChar.nickname.toLowerCase() !== trimmedName);
+
+    return isDuplicateLocal || isDuplicateGlobal;
+  };
+
+  const handleNicknameChange = (value: string) => {
+    setNickname(value);
+    if (value.trim() && checkDuplicateNickname(value)) {
+      setNicknameError('이미 사용 중인 닉네임입니다.');
+    } else {
+      setNicknameError('');
+    }
+  };
 
   const resetForm = () => {
     setNickname('');
     setSelectedJobs([]);
     setEditingChar(null);
     setShowForm(false);
+    setNicknameError('');
   };
 
   const handleJobToggle = (job: JobClass) => {
@@ -29,6 +88,11 @@ const CharactersPage: React.FC = () => {
 
     if (!nickname.trim()) {
       alert('닉네임을 입력해주세요.');
+      return;
+    }
+
+    if (checkDuplicateNickname(nickname)) {
+      alert('이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요.');
       return;
     }
 
@@ -84,11 +148,12 @@ const CharactersPage: React.FC = () => {
             <input
               type="text"
               value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              className="form-input"
+              onChange={(e) => handleNicknameChange(e.target.value)}
+              className={`form-input ${nicknameError ? 'input-error' : ''}`}
               placeholder="게임 내 닉네임"
               required
             />
+            {nicknameError && <span className="error-text">{nicknameError}</span>}
           </div>
 
           <div className="form-group">

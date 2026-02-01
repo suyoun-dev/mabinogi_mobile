@@ -3,6 +3,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  gap: 16px;
 }
 
 .characters-page .page-title {
@@ -57,6 +58,17 @@
 .character-form .form-input:focus {
   outline: none;
   border-color: #FF8E8E;
+}
+
+.character-form .form-input.input-error {
+  border-color: #dc3545;
+}
+
+.character-form .error-text {
+  color: #dc3545;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: block;
 }
 
 .job-grid {

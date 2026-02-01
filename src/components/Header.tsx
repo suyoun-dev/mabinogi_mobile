@@ -23,6 +23,7 @@ const Header: React.FC = () => {
     <header className="header">
       <div className="header-top">
         <Link to="/" className="logo">
+          <img src="/imp_dam.png" alt="" className="logo-icon" />
           새녘 스케줄러
         </Link>
         <div className="header-right">
