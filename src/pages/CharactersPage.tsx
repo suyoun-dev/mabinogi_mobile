@@ -6,13 +6,14 @@ import * as scheduleService from '../services/scheduleService';
 import './CharactersPage.css';
 
 const CharactersPage: React.FC = () => {
-  const { characters, selectedCharacter, createCharacter, updateCharacter, deleteCharacter, selectCharacter } = useUser();
+  const { characters, selectedCharacter, createCharacter, updateCharacter, deleteCharacter, selectCharacter, loading } = useUser();
   const [showForm, setShowForm] = useState(false);
   const [editingChar, setEditingChar] = useState<Character | null>(null);
   const [nickname, setNickname] = useState('');
   const [selectedJobs, setSelectedJobs] = useState<JobClass[]>([]);
   const [existingNicknames, setExistingNicknames] = useState<Set<string>>(new Set());
   const [nicknameError, setNicknameError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   // Firebase에서 기존 닉네임 목록 불러오기
   useEffect(() => {
@@ -83,7 +84,7 @@ const CharactersPage: React.FC = () => {
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!nickname.trim()) {
@@ -101,15 +102,21 @@ const CharactersPage: React.FC = () => {
       return;
     }
 
-    if (editingChar) {
-      updateCharacter(editingChar.id, { nickname: nickname.trim(), jobs: selectedJobs });
-      alert('캐릭터가 수정되었습니다.');
-    } else {
-      createCharacter(nickname.trim(), selectedJobs);
-      alert('캐릭터가 등록되었습니다.');
+    setSubmitting(true);
+    try {
+      if (editingChar) {
+        await updateCharacter(editingChar.id, { nickname: nickname.trim(), jobs: selectedJobs });
+        alert('캐릭터가 수정되었습니다.');
+      } else {
+        await createCharacter(nickname.trim(), selectedJobs);
+        alert('캐릭터가 등록되었습니다.');
+      }
+      resetForm();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '오류가 발생했습니다.');
+    } finally {
+      setSubmitting(false);
     }
-
-    resetForm();
   };
 
   const handleEdit = (char: Character) => {
@@ -119,11 +126,25 @@ const CharactersPage: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (char: Character) => {
+  const handleDelete = async (char: Character) => {
     if (confirm(`'${char.nickname}' 캐릭터를 삭제하시겠습니까?`)) {
-      deleteCharacter(char.id);
+      try {
+        await deleteCharacter(char.id);
+      } catch (error) {
+        alert('캐릭터 삭제에 실패했습니다.');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="page characters-page">
+        <div className="loading-state">
+          <p>캐릭터 정보를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page characters-page">
@@ -173,11 +194,11 @@ const CharactersPage: React.FC = () => {
           </div>
 
           <div className="form-actions">
-            <button type="button" className="btn btn-secondary" onClick={resetForm}>
+            <button type="button" className="btn btn-secondary" onClick={resetForm} disabled={submitting}>
               취소
             </button>
-            <button type="submit" className="btn btn-primary">
-              {editingChar ? '수정' : '등록'}
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? '저장 중...' : (editingChar ? '수정' : '등록')}
             </button>
           </div>
         </form>

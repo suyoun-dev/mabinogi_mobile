@@ -9,10 +9,23 @@ const HomePage: React.FC = () => {
   const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob, updateSchedule } = useSchedules();
   const { selectedCharacter } = useUser();
   const [filter, setFilter] = useState<ContentType | 'all'>('all');
+  const [searchNickname, setSearchNickname] = useState('');
 
   const filteredSchedules = schedules.filter((schedule) => {
-    if (filter === 'all') return true;
-    return schedule.type === filter;
+    // 타입 필터
+    if (filter !== 'all' && schedule.type !== filter) return false;
+
+    // 닉네임 검색 필터
+    if (searchNickname.trim()) {
+      const searchTerm = searchNickname.trim().toLowerCase();
+      const leaderMatch = schedule.leaderNickname.toLowerCase().includes(searchTerm);
+      const memberMatch = schedule.members?.some(
+        (member) => member.nickname.toLowerCase().includes(searchTerm)
+      );
+      return leaderMatch || memberMatch;
+    }
+
+    return true;
   });
 
   const handleJoin = async (scheduleId: string, job: JobClass) => {
@@ -65,6 +78,24 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="page home-page">
+      <div className="search-bar">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="닉네임으로 검색..."
+          value={searchNickname}
+          onChange={(e) => setSearchNickname(e.target.value)}
+        />
+        {searchNickname && (
+          <button
+            className="search-clear"
+            onClick={() => setSearchNickname('')}
+          >
+            ×
+          </button>
+        )}
+      </div>
+
       <div className="filter-tabs">
         <button
           className={`filter-tab ${filter === 'all' ? 'active' : ''}`}

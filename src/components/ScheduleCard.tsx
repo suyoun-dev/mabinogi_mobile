@@ -295,8 +295,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         </div>
       )}
 
-      {/* 일정 수정 폼 (관리자/파티장용) */}
-      {(isAdmin || isLeader) && showEditForm && onEditSchedule && (
+      {/* 일정 수정 폼 (관리자/파티장용) - 관리자는 캐릭터 없이도 가능 */}
+      {(isAdmin || (selectedCharacter && isLeader)) && showEditForm && onEditSchedule && (
         <div className="edit-schedule-form">
           <div className="edit-form-header">
             <span className="label">일정 수정</span>
@@ -383,8 +383,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         </div>
       )}
 
-      {/* 파티원 직접 추가 폼 (관리자/파티장용) */}
-      {(isAdmin || isLeader) && showAddMember && onAddMemberDirectly && !isFull && (
+      {/* 파티원 직접 추가 폼 (관리자/파티장용) - 관리자는 캐릭터 없이도 가능 */}
+      {(isAdmin || (selectedCharacter && isLeader)) && showAddMember && onAddMemberDirectly && !isFull && (
         <div className="add-member-form">
           <div className="add-member-header">
             <span className="label">파티원 직접 추가</span>
@@ -428,7 +428,44 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       )}
 
       <div className="schedule-actions">
-        {!selectedCharacter ? (
+        {/* 관리자는 캐릭터 없이도 수정 가능 */}
+        {isAdmin && !selectedCharacter ? (
+          <>
+            {onEditSchedule && (
+              <button
+                className="btn btn-info"
+                onClick={handleOpenEditForm}
+                disabled={loading}
+              >
+                수정
+              </button>
+            )}
+            {!isFull && onAddMemberDirectly && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowAddMember(!showAddMember)}
+                disabled={loading}
+              >
+                {showAddMember ? '취소' : '파티원 추가'}
+              </button>
+            )}
+            <button
+              className="btn btn-secondary"
+              onClick={handleToggleClosed}
+              disabled={loading}
+            >
+              {schedule.isClosed ? '마감 해제' : '마감하기'}
+            </button>
+            <button
+              className="btn btn-danger"
+              onClick={handleDelete}
+              disabled={loading}
+            >
+              삭제
+            </button>
+            <span className="admin-badge">관리자</span>
+          </>
+        ) : !selectedCharacter ? (
           <p className="no-character-msg">캐릭터를 먼저 등록해주세요</p>
         ) : isLeader || isAdmin ? (
           <>

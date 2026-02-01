@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { UserProvider } from './contexts/UserContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import CreateSchedulePage from './pages/CreateSchedulePage';
 import MySchedulePage from './pages/MySchedulePage';
@@ -101,6 +102,7 @@ function AppContent() {
           />
         </Routes>
       </main>
+      {isLoggedIn && <Footer />}
     </div>
   );
 }

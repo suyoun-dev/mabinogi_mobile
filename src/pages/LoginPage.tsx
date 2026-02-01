@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import * as authService from '../services/authService';
 import './LoginPage.css';
 
 const LoginPage: React.FC = () => {
@@ -11,6 +12,9 @@ const LoginPage: React.FC = () => {
   const [nickname, setNickname] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showCodeModal, setShowCodeModal] = useState(false);
+  const [newUserCode, setNewUserCode] = useState('');
+  const [nicknameError, setNicknameError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,10 +40,34 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const checkDuplicateNickname = async (name: string): Promise<boolean> => {
+    const users = await authService.getAllUsers();
+    return users.some(user => user.nickname.toLowerCase() === name.toLowerCase());
+  };
+
+  const handleNicknameChange = async (value: string) => {
+    setNickname(value);
+    setNicknameError('');
+
+    if (value.trim().length >= 2) {
+      const isDuplicate = await checkDuplicateNickname(value.trim());
+      if (isDuplicate) {
+        setNicknameError('이미 사용 중인 닉네임입니다.');
+      }
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nickname.trim()) {
       setError('닉네임을 입력해주세요.');
+      return;
+    }
+
+    // 중복 닉네임 체크
+    const isDuplicate = await checkDuplicateNickname(nickname.trim());
+    if (isDuplicate) {
+      setError('이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요.');
       return;
     }
 
@@ -48,13 +76,34 @@ const LoginPage: React.FC = () => {
 
     try {
       const user = await register(nickname.trim());
-      alert(`가입 완료! 내 코드: ${user.code}\n\n이 코드를 잘 보관하세요. 다음 로그인 시 필요합니다.`);
-      navigate('/');
+      setNewUserCode(user.code);
+      setShowCodeModal(true);
     } catch (err) {
       setError('가입 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCopyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(newUserCode);
+      alert('코드가 복사되었습니다!');
+    } catch (err) {
+      // 클립보드 API 실패 시 대체 방법
+      const textArea = document.createElement('textarea');
+      textArea.value = newUserCode;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('코드가 복사되었습니다!');
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowCodeModal(false);
+    navigate('/');
   };
 
   return (
@@ -112,16 +161,17 @@ const LoginPage: React.FC = () => {
               <input
                 type="text"
                 value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                className="form-input"
+                onChange={(e) => handleNicknameChange(e.target.value)}
+                className={`form-input ${nicknameError ? 'input-error' : ''}`}
                 placeholder="사용할 닉네임"
                 maxLength={20}
               />
+              {nicknameError && <span className="field-error">{nicknameError}</span>}
             </div>
 
             {error && <p className="error-message">{error}</p>}
 
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" className="btn btn-primary" disabled={loading || !!nicknameError}>
               {loading ? '가입 중...' : '가입하고 코드 받기'}
             </button>
 
@@ -132,6 +182,29 @@ const LoginPage: React.FC = () => {
           </form>
         )}
       </div>
+
+      {/* 코드 발급 모달 */}
+      {showCodeModal && (
+        <div className="code-modal-overlay" onClick={handleCloseModal}>
+          <div className="code-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>가입 완료!</h3>
+            <p className="code-label">내 입장 코드</p>
+            <div className="code-display">
+              <span className="code-text">{newUserCode}</span>
+              <button className="btn-copy" onClick={handleCopyCode}>
+                복사
+              </button>
+            </div>
+            <p className="code-warning">
+              이 코드를 잘 보관하세요!<br />
+              다음 로그인 시 필요합니다.
+            </p>
+            <button className="btn btn-primary" onClick={handleCloseModal}>
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
