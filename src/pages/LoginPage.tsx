@@ -61,7 +61,7 @@ const LoginPage: React.FC = () => {
     <div className="login-page">
       <div className="login-container">
         <div className="logo-container">
-          <img src="/saenyeok_title.svg" alt="새녘" className="logo-image" />
+          <img src="/saenyeok_title.png" alt="새녘" className="logo-image" />
         </div>
         <p className="login-subtitle">모비노기 어비스 & 레이드 파티 관리</p>
 
