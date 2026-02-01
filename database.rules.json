@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "schedules": {
+      ".read": true,
+      ".write": true
+    },
+    "users": {
+      ".read": true,
+      ".write": true
+    },
+    "characters": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
