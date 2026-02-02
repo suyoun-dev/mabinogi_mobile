@@ -25,8 +25,10 @@ interface ScheduleCardProps {
   onRemoveMember?: (scheduleId: string, characterId: string) => Promise<void>;
   onAddMemberDirectly?: (scheduleId: string, nickname: string, job: string) => Promise<void>;
   onUpdateMemberJob?: (scheduleId: string, characterId: string, newJob: JobClass) => Promise<void>;
+  onUpdateLeaderJob?: (scheduleId: string, newJob: JobClass) => Promise<void>;
   onEditSchedule?: (scheduleId: string, updates: ScheduleEditData) => Promise<void>;
-  onCopySchedule?: (schedule: Schedule) => void;
+  onCopySchedule?: (schedule: Schedule, includeMembers: boolean) => void;
+  searchHighlight?: string; // 검색어 강조 표시용
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({
@@ -38,8 +40,10 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onRemoveMember,
   onAddMemberDirectly,
   onUpdateMemberJob,
+  onUpdateLeaderJob,
   onEditSchedule,
   onCopySchedule,
+  searchHighlight,
 }) => {
   const { selectedCharacter } = useUser();
   const { user } = useAuth();
@@ -47,8 +51,10 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   const [loading, setLoading] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
   const [newMemberNickname, setNewMemberNickname] = useState('');
-  const [newMemberJob, setNewMemberJob] = useState<string>('');
+  const [newMemberJob, setNewMemberJob] = useState<string>('미정');
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [editingLeaderJob, setEditingLeaderJob] = useState(false);
+  const [showCopyOptions, setShowCopyOptions] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editFormData, setEditFormData] = useState<ScheduleEditData>({
     title: schedule.title,
@@ -60,9 +66,6 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   });
 
   const isAdmin = user?.role === 'admin';
-
-  // 내 닉네임 확인 (파티장 또는 멤버 목록에서)
-  const myNickname = selectedCharacter?.nickname;
 
   const scheduleDate = parseISO(schedule.date);
   const isScheduleToday = isToday(scheduleDate);
@@ -77,13 +80,34 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
 
   const isLeader = selectedCharacter?.id === schedule.leaderId;
   const isCreator = user?.id === schedule.createdBy; // 일정 생성자 확인
+  // 멤버 여부 확인 (ID 또는 닉네임으로 매칭)
   const isMember = schedule.members?.some(
-    (m) => m.characterId === selectedCharacter?.id
+    (m) => m.characterId === selectedCharacter?.id ||
+           (selectedCharacter?.nickname && m.nickname === selectedCharacter.nickname)
   );
+  // 파티장 닉네임 매칭 (타인이 등록한 경우)
+  const isLeaderByNickname = selectedCharacter?.nickname &&
+    schedule.leaderNickname.split(' (')[0] === selectedCharacter.nickname;
   const currentCount = (schedule.members?.length || 0) + 1; // 파티장 포함
   const isFull = currentCount >= schedule.maxMembers;
   const isEffectivelyClosed = schedule.isClosed || isPastSchedule; // 지난 일정은 자동 마감
   const canEdit = isAdmin || isLeader || isCreator; // 수정 권한: 관리자, 파티장, 생성자
+  const isRecruiting = !schedule.isClosed && !isPastSchedule && !isFull; // 모집중 여부
+
+  // 파티원 가나다순 정렬
+  const sortedMembers = schedule.members ? [...schedule.members].sort((a, b) =>
+    a.nickname.localeCompare(b.nickname, 'ko')
+  ) : [];
+
+  // 검색어 강조 함수
+  const highlightText = (text: string) => {
+    if (!searchHighlight || !searchHighlight.trim()) return text;
+    const regex = new RegExp(`(${searchHighlight.trim()})`, 'gi');
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      regex.test(part) ? <mark key={i} className="search-highlight">{part}</mark> : part
+    );
+  };
 
   const handleJoin = async (job: JobClass) => {
     if (!selectedCharacter) return;
@@ -142,18 +166,28 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       alert('닉네임을 입력해주세요.');
       return;
     }
-    if (!newMemberJob) {
-      alert('직업을 선택해주세요.');
-      return;
-    }
     setLoading(true);
     try {
-      await onAddMemberDirectly(schedule.id, newMemberNickname.trim(), newMemberJob);
+      await onAddMemberDirectly(schedule.id, newMemberNickname.trim(), newMemberJob || '미정');
       setNewMemberNickname('');
-      setNewMemberJob('');
+      setNewMemberJob('미정');
       setShowAddMember(false);
     } catch (error) {
       alert(error instanceof Error ? error.message : '멤버 추가 실패');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 파티장 직업 수정
+  const handleUpdateLeaderJob = async (newJob: JobClass) => {
+    if (!onUpdateLeaderJob) return;
+    setLoading(true);
+    try {
+      await onUpdateLeaderJob(schedule.id, newJob);
+      setEditingLeaderJob(false);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '직업 수정 실패');
     } finally {
       setLoading(false);
     }
@@ -207,6 +241,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           </div>
         )}
         {schedule.isClosed && <span className="closed-badge">마감</span>}
+        {isRecruiting && <span className="recruiting-badge">모집중</span>}
       </div>
 
       <div className="schedule-date-time-row">
@@ -219,8 +254,30 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       <div className="schedule-info">
         <div className="leader-info">
           <span className="label">파티장</span>
-          <span className={`value ${schedule.leaderNickname.includes(myNickname || '') && myNickname ? 'my-nickname' : ''}`}>
-            {schedule.leaderNickname}
+          <span className={`value ${isLeaderByNickname ? 'my-nickname' : ''}`}>
+            {highlightText(schedule.leaderNickname.split(' (')[0])}
+            {editingLeaderJob && canEdit && onUpdateLeaderJob ? (
+              <select
+                className="job-edit-select"
+                value={schedule.leaderJob || '미정'}
+                onChange={(e) => handleUpdateLeaderJob(e.target.value as JobClass)}
+                autoFocus
+                onBlur={() => setEditingLeaderJob(false)}
+              >
+                <option value="미정">미정</option>
+                {JOB_LIST.map((job) => (
+                  <option key={job} value={job}>{job}</option>
+                ))}
+              </select>
+            ) : (
+              <small
+                className={canEdit && onUpdateLeaderJob ? 'editable-job' : ''}
+                onClick={() => canEdit && onUpdateLeaderJob && setEditingLeaderJob(true)}
+                title={canEdit && onUpdateLeaderJob ? '클릭하여 직업 변경' : ''}
+              >
+                ({schedule.leaderJob || '미정'})
+              </small>
+            )}
           </span>
         </div>
         <div className="member-count">
@@ -231,25 +288,28 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         </div>
       </div>
 
-      {schedule.members && schedule.members.length > 0 && (
+      {sortedMembers.length > 0 && (
         <div className="members-list">
           <span className="label">참여자</span>
           <div className="members">
-            {schedule.members.map((member, idx) => {
-              const isMyMember = member.characterId === selectedCharacter?.id;
-              const canEditJob = isMyMember && member.job === '미정' && onUpdateMemberJob;
+            {sortedMembers.map((member, idx) => {
+              // ID 또는 닉네임으로 본인 여부 확인
+              const isMyMember = member.characterId === selectedCharacter?.id ||
+                (selectedCharacter?.nickname && member.nickname === selectedCharacter.nickname);
+              // 본인 또는 수정권한자는 직업 수정 가능
+              const canEditMemberJob = (isMyMember || canEdit) && onUpdateMemberJob;
               const isEditing = editingMemberId === member.characterId;
 
               return (
                 <span key={idx} className={`member-tag ${isMyMember ? 'my-nickname' : ''}`}>
-                  {member.nickname}
+                  {highlightText(member.nickname)}
                   {isEditing ? (
                     <select
                       className="job-edit-select"
                       value={member.job}
                       onChange={async (e) => {
                         const newJob = e.target.value as JobClass;
-                        if (newJob && newJob !== '미정' && onUpdateMemberJob) {
+                        if (newJob && onUpdateMemberJob) {
                           await onUpdateMemberJob(schedule.id, member.characterId, newJob);
                         }
                         setEditingMemberId(null);
@@ -267,15 +327,15 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                   ) : (
                     <>
                       <small
-                        className={canEditJob ? 'editable-job' : ''}
-                        onClick={() => canEditJob && setEditingMemberId(member.characterId)}
-                        title={canEditJob ? '클릭하여 직업 변경' : ''}
+                        className={canEditMemberJob ? 'editable-job' : ''}
+                        onClick={() => canEditMemberJob && setEditingMemberId(member.characterId)}
+                        title={canEditMemberJob ? '클릭하여 직업 변경' : ''}
                       >
                         ({member.job})
                       </small>
                     </>
                   )}
-                  {(isAdmin || isLeader) && onRemoveMember && !isEditing && (
+                  {canEdit && onRemoveMember && !isEditing && (
                     <button
                       className="member-remove-btn"
                       onClick={() => {
@@ -433,7 +493,6 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
               onChange={(e) => setNewMemberJob(e.target.value)}
               className="add-member-select"
             >
-              <option value="">직업 선택</option>
               {JOB_LIST_WITH_UNDECIDED.map((job) => (
                 <option key={job} value={job}>
                   {job}
@@ -454,14 +513,38 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       <div className="schedule-actions">
         {/* 복사 버튼 - 모든 사용자 가능 */}
         {onCopySchedule && (
-          <button
-            className="btn btn-outline"
-            onClick={() => onCopySchedule(schedule)}
-            disabled={loading}
-            title="일정 복사"
-          >
-            복사
-          </button>
+          <div className="copy-btn-container">
+            <button
+              className="btn btn-outline"
+              onClick={() => setShowCopyOptions(!showCopyOptions)}
+              disabled={loading}
+              title="일정 복사"
+            >
+              복사
+            </button>
+            {showCopyOptions && (
+              <div className="copy-options">
+                <button
+                  className="copy-option-btn"
+                  onClick={() => {
+                    onCopySchedule(schedule, false);
+                    setShowCopyOptions(false);
+                  }}
+                >
+                  일정만 복사
+                </button>
+                <button
+                  className="copy-option-btn"
+                  onClick={() => {
+                    onCopySchedule(schedule, true);
+                    setShowCopyOptions(false);
+                  }}
+                >
+                  파티원 포함 복사
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {/* 수정 권한이 있는 경우 (관리자, 파티장, 생성자) */}
@@ -507,7 +590,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
           </>
         ) : !selectedCharacter ? (
           <p className="no-character-msg">캐릭터를 먼저 등록해주세요</p>
-        ) : isMember ? (
+        ) : isMember || isLeaderByNickname ? (
           <button
             className="btn btn-danger"
             onClick={handleLeave}

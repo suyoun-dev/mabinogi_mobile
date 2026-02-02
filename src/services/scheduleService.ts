@@ -309,3 +309,26 @@ export const updateMemberJob = async (
 
   return true;
 };
+
+// 파티장 직업 변경
+export const updateLeaderJob = async (
+  scheduleId: string,
+  newJob: string
+): Promise<boolean> => {
+  const schedule = await getScheduleById(scheduleId);
+
+  if (!schedule) {
+    throw new Error('일정을 찾을 수 없습니다.');
+  }
+
+  // leaderNickname에서 이름만 추출 (닉네임 (직업) 형식에서)
+  const leaderName = schedule.leaderNickname.split(' (')[0];
+  const newLeaderNickname = `${leaderName} (${newJob})`;
+
+  await updateSchedule(scheduleId, {
+    leaderJob: newJob as PartyMember['job'],
+    leaderNickname: newLeaderNickname,
+  });
+
+  return true;
+};

@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSchedules } from '../hooks/useSchedules';
 import * as authService from '../services/authService';
 import * as characterService from '../services/characterService';
-import type { UserAccount, Character, ContentType, DifficultyType, JobClass } from '../types';
+import type { UserAccount, Character, ContentType, DifficultyType, JobClass, PartyMember } from '../types';
 import { CONTENT_LIST } from '../types';
 import './AdminPage.css';
 
@@ -133,7 +133,7 @@ const AdminPage: React.FC = () => {
         return;
       }
 
-      // CSV 파싱 (헤더: 날짜,시간,종류,컨텐츠,난이도,제목,최대인원,파티장,파티장직업,비고)
+      // CSV 파싱 (헤더: 날짜,시간,종류,컨텐츠,난이도,제목,최대인원,파티장,파티장직업,비고,파티원)
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
       const dateIdx = headers.findIndex(h => h.includes('날짜') || h === 'date');
       const timeIdx = headers.findIndex(h => h.includes('시간') || h === 'time');
@@ -145,6 +145,7 @@ const AdminPage: React.FC = () => {
       const leaderIdx = headers.findIndex(h => h.includes('파티장') || h === 'leader');
       const jobIdx = headers.findIndex(h => h.includes('직업') || h === 'job');
       const noteIdx = headers.findIndex(h => h.includes('비고') || h === 'note');
+      const membersIdx = headers.findIndex(h => h.includes('파티원') || h === 'members');
 
       let successCount = 0;
       let errorCount = 0;
@@ -163,6 +164,24 @@ const AdminPage: React.FC = () => {
           const leaderNickname = cols[leaderIdx] || '미정';
           const leaderJob = (cols[jobIdx] as JobClass) || '미정';
           const note = cols[noteIdx] || '';
+
+          // 파티원 파싱 (닉네임:직업 형식, | 구분)
+          const membersStr = membersIdx >= 0 ? cols[membersIdx] : '';
+          const members: PartyMember[] = [];
+          if (membersStr) {
+            const memberParts = membersStr.split('|');
+            memberParts.forEach((part, idx) => {
+              const [nickname, job] = part.split(':').map(s => s.trim());
+              if (nickname) {
+                members.push({
+                  characterId: `csv_${Date.now()}_${i}_${idx}`,
+                  nickname,
+                  job: (job as JobClass) || '미정',
+                  joinedAt: Date.now(),
+                });
+              }
+            });
+          }
 
           // 날짜 유효성 검사
           if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -183,7 +202,7 @@ const AdminPage: React.FC = () => {
             leaderId: `excel_${Date.now()}_${i}`,
             leaderNickname: `${leaderNickname} (${leaderJob})`,
             leaderJob,
-            members: [],
+            members,
             createdBy: user.id,
           });
 
@@ -207,9 +226,9 @@ const AdminPage: React.FC = () => {
 
   // 샘플 CSV 다운로드
   const downloadSampleCsv = () => {
-    const sample = `날짜,시간,종류,컨텐츠,난이도,제목,최대인원,파티장,파티장직업,비고
-2026-02-01,21:00,어비스,바리 어비스,어려움,바리 1파티,8,파티장닉네임,전사,비고내용
-2026-02-02,22:00,레이드,글라스기브넨,매우 어려움,글라스 2파티,8,파티장닉네임2,힐러,`;
+    const sample = `날짜,시간,종류,컨텐츠,난이도,제목,최대인원,파티장,파티장직업,비고,파티원
+2026-02-01,21:00,어비스,바리 어비스,어려움,바리 1파티,8,파티장닉네임,전사,비고내용,멤버1:힐러|멤버2:궁수|멤버3:미정
+2026-02-02,22:00,레이드,글라스기브넨,매우 어려움,글라스 2파티,8,파티장닉네임2,힐러,,`;
 
     const blob = new Blob(['\uFEFF' + sample], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -265,6 +284,7 @@ const AdminPage: React.FC = () => {
           </div>
           <p className="hint-text">* CSV 형식으로 일정을 일괄 등록할 수 있습니다.</p>
           <p className="hint-text">* 날짜 형식: YYYY-MM-DD (예: 2026-02-01)</p>
+          <p className="hint-text">* 파티원 형식: 닉네임:직업|닉네임:직업 (예: 멤버1:힐러|멤버2:궁수)</p>
         </div>
       </section>
 

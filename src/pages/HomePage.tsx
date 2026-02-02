@@ -7,13 +7,16 @@ import type { Schedule, JobClass, ContentType, DifficultyType } from '../types';
 import html2canvas from 'html2canvas';
 import './HomePage.css';
 
+type SaveMode = 'simple' | 'full' | 'all';
+
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob, updateSchedule } = useSchedules();
+  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob, updateLeaderJob, updateSchedule } = useSchedules();
   const { selectedCharacter } = useUser();
   const [filter, setFilter] = useState<ContentType | 'all'>('all');
   const [searchNickname, setSearchNickname] = useState('');
   const [savingImage, setSavingImage] = useState(false);
+  const [showSaveOptions, setShowSaveOptions] = useState(false);
   const scheduleListRef = useRef<HTMLDivElement>(null);
 
   const filteredSchedules = schedules.filter((schedule) => {
@@ -73,7 +76,7 @@ const HomePage: React.FC = () => {
   };
 
   // 파티 복사 - 복사된 정보를 가지고 일정 등록 페이지로 이동
-  const handleCopySchedule = (schedule: Schedule) => {
+  const handleCopySchedule = (schedule: Schedule, includeMembers: boolean) => {
     const copyData = {
       type: schedule.type,
       contentName: schedule.contentName,
@@ -81,25 +84,46 @@ const HomePage: React.FC = () => {
       title: schedule.title,
       maxMembers: schedule.maxMembers,
       note: schedule.note || '',
+      // 파티원 포함 복사 시 파티원 정보도 저장
+      members: includeMembers ? schedule.members : undefined,
+      leaderNickname: includeMembers ? schedule.leaderNickname.split(' (')[0] : undefined,
+      leaderJob: includeMembers ? schedule.leaderJob : undefined,
     };
     // sessionStorage에 복사 데이터 저장
     sessionStorage.setItem('copyScheduleData', JSON.stringify(copyData));
     navigate('/create');
   };
 
+  // 파티장 직업 변경
+  const handleUpdateLeaderJob = async (scheduleId: string, newJob: JobClass) => {
+    await updateLeaderJob(scheduleId, newJob);
+  };
+
   // 검색 결과 이미지로 저장
-  const handleSaveSearchResults = async () => {
+  const handleSaveSearchResults = async (mode: SaveMode = 'full') => {
     if (!scheduleListRef.current || filteredSchedules.length === 0) return;
 
     setSavingImage(true);
+    setShowSaveOptions(false);
+
     try {
-      const canvas = await html2canvas(scheduleListRef.current, {
+      // 저장 모드에 따라 클래스 추가
+      const container = scheduleListRef.current;
+      if (mode === 'simple') {
+        container.classList.add('save-mode-simple');
+      }
+
+      const canvas = await html2canvas(container, {
         backgroundColor: '#0a2647',
         scale: 2,
       });
 
+      // 클래스 제거
+      container.classList.remove('save-mode-simple');
+
       const link = document.createElement('a');
-      link.download = `${searchNickname}_일정_${new Date().toLocaleDateString('ko-KR')}.png`;
+      const prefix = searchNickname.trim() || '전체';
+      link.download = `${prefix}_일정_${new Date().toLocaleDateString('ko-KR')}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (error) {
@@ -147,13 +171,31 @@ const HomePage: React.FC = () => {
           <span className="search-result-count">
             "{searchNickname}" 검색 결과: {filteredSchedules.length}개
           </span>
-          <button
-            className="btn btn-save-search"
-            onClick={handleSaveSearchResults}
-            disabled={savingImage}
-          >
-            {savingImage ? '저장 중...' : '이미지로 저장'}
-          </button>
+          <div className="save-btn-container">
+            <button
+              className="btn btn-save-search"
+              onClick={() => setShowSaveOptions(!showSaveOptions)}
+              disabled={savingImage}
+            >
+              {savingImage ? '저장 중...' : '이미지로 저장'}
+            </button>
+            {showSaveOptions && (
+              <div className="save-options">
+                <button
+                  className="save-option-btn"
+                  onClick={() => handleSaveSearchResults('simple')}
+                >
+                  간단히 (최소 정보)
+                </button>
+                <button
+                  className="save-option-btn"
+                  onClick={() => handleSaveSearchResults('full')}
+                >
+                  전체 일정 저장
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -195,8 +237,10 @@ const HomePage: React.FC = () => {
               onRemoveMember={handleRemoveMember}
               onAddMemberDirectly={handleAddMemberDirectly}
               onUpdateMemberJob={handleUpdateMemberJob}
+              onUpdateLeaderJob={handleUpdateLeaderJob}
               onEditSchedule={handleEditSchedule}
               onCopySchedule={handleCopySchedule}
+              searchHighlight={searchNickname.trim()}
             />
           ))}
         </div>

@@ -144,6 +144,19 @@ export const useSchedules = () => {
     []
   );
 
+  const updateLeaderJob = useCallback(
+    async (scheduleId: string, newJob: string) => {
+      try {
+        setError(null);
+        await scheduleService.updateLeaderJob(scheduleId, newJob);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '파티장 직업 변경 실패');
+        throw err;
+      }
+    },
+    []
+  );
+
   return {
     schedules,
     loading,
@@ -159,5 +172,6 @@ export const useSchedules = () => {
     deletePastSchedules,
     addMemberDirectly,
     updateMemberJob,
+    updateLeaderJob,
   };
 };

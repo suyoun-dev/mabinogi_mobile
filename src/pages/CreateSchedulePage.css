@@ -181,3 +181,49 @@
   flex-direction: column;
   gap: 10px;
 }
+
+/* 복사된 파티원 섹션 */
+.copied-members-section {
+  background: rgba(23, 162, 184, 0.1);
+  border: 1px solid rgba(23, 162, 184, 0.3);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.copied-members-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.copied-member-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 10px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.remove-member-btn {
+  background: transparent;
+  border: none;
+  color: #FF8E8E;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.remove-member-btn:hover {
+  opacity: 1;
+}
+
+.btn-clear-members {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}

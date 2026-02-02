@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '../contexts/AuthContext';
-import type { ContentType, DifficultyType, JobClass } from '../types';
+import type { ContentType, DifficultyType, JobClass, PartyMember } from '../types';
 import { DIFFICULTY_LIST, CONTENT_LIST, JOB_LIST_WITH_UNDECIDED } from '../types';
 import { format } from 'date-fns';
 import './CreateSchedulePage.css';
@@ -30,6 +30,9 @@ const CreateSchedulePage: React.FC = () => {
   const [customLeaderNickname, setCustomLeaderNickname] = useState('');
   const [customLeaderJob, setCustomLeaderJob] = useState<JobClass | ''>('미정');
 
+  // 복사된 파티원 정보
+  const [copiedMembers, setCopiedMembers] = useState<PartyMember[]>([]);
+
   const isAdmin = user?.role === 'admin';
 
   // 복사된 일정 데이터 적용
@@ -44,13 +47,23 @@ const CreateSchedulePage: React.FC = () => {
         if (copyData.title) setTitle(copyData.title);
         if (copyData.maxMembers) setMaxMembers(copyData.maxMembers);
         if (copyData.note) setNote(copyData.note);
+
+        // 파티원 포함 복사 시
+        if (copyData.members && isAdmin) {
+          setCopiedMembers(copyData.members);
+        }
+        if (copyData.leaderNickname && isAdmin) {
+          setUseCustomLeader(true);
+          setCustomLeaderNickname(copyData.leaderNickname);
+          setCustomLeaderJob(copyData.leaderJob || '미정');
+        }
       } catch {
         console.error('복사 데이터 파싱 실패');
       }
       // 사용 후 삭제
       sessionStorage.removeItem('copyScheduleData');
     }
-  }, []);
+  }, [isAdmin]);
 
   const handleTypeChange = (newType: ContentType) => {
     setType(newType);
@@ -105,6 +118,13 @@ const CreateSchedulePage: React.FC = () => {
         ? customLeaderJob as JobClass
         : leaderJob as JobClass;
 
+      // 복사된 파티원이 있으면 새 ID 부여
+      const membersToAdd = copiedMembers.map((m, idx) => ({
+        ...m,
+        characterId: `copied_${Date.now()}_${idx}`,
+        joinedAt: Date.now(),
+      }));
+
       await createSchedule({
         type,
         contentName,
@@ -118,7 +138,7 @@ const CreateSchedulePage: React.FC = () => {
         leaderId,
         leaderNickname: `${leaderNickname} (${finalLeaderJob})`,
         leaderJob: finalLeaderJob,
-        members: [],
+        members: membersToAdd,
         createdBy: user.id,
       });
 
@@ -326,6 +346,34 @@ const CreateSchedulePage: React.FC = () => {
             rows={3}
           />
         </div>
+
+        {/* 복사된 파티원 표시 */}
+        {copiedMembers.length > 0 && (
+          <div className="form-group copied-members-section">
+            <label>복사된 파티원 ({copiedMembers.length}명)</label>
+            <div className="copied-members-list">
+              {copiedMembers.map((member, idx) => (
+                <span key={idx} className="copied-member-tag">
+                  {member.nickname} ({member.job})
+                  <button
+                    type="button"
+                    className="remove-member-btn"
+                    onClick={() => setCopiedMembers(copiedMembers.filter((_, i) => i !== idx))}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="btn btn-secondary btn-clear-members"
+              onClick={() => setCopiedMembers([])}
+            >
+              전체 제거
+            </button>
+          </div>
+        )}
 
         <button type="submit" className="btn btn-primary btn-submit" disabled={loading}>
           {loading ? '등록 중...' : '일정 등록'}
