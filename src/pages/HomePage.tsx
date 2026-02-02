@@ -12,15 +12,18 @@ import './HomePage.css';
 
 type SaveMode = 'simple' | 'full' | 'all';
 
+type ViewMode = 'card' | 'table';
+
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob, updateLeaderJob, updateSchedule } = useSchedules();
+  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob, updateLeaderJob, updateLeaderNickname, updateMemberNickname, updateSchedule } = useSchedules();
   const { selectedCharacter } = useUser();
   const [filter, setFilter] = useState<ContentType | 'all'>('all');
   const [searchNickname, setSearchNickname] = useState('');
   const [savingImage, setSavingImage] = useState(false);
   const [showSaveOptions, setShowSaveOptions] = useState(false);
   const [showExportTable, setShowExportTable] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('card');
   const [availableCharacters, setAvailableCharacters] = useState<Character[]>([]);
   const scheduleListRef = useRef<HTMLDivElement>(null);
   const exportTableRef = useRef<HTMLDivElement>(null);
@@ -112,6 +115,36 @@ const HomePage: React.FC = () => {
   // 파티장 직업 변경
   const handleUpdateLeaderJob = async (scheduleId: string, newJob: JobClass) => {
     await updateLeaderJob(scheduleId, newJob);
+  };
+
+  // 파티장 닉네임 변경
+  const handleUpdateLeaderNickname = async (scheduleId: string, newNickname: string) => {
+    await updateLeaderNickname(scheduleId, newNickname);
+  };
+
+  // 파티원 닉네임 변경
+  const handleUpdateMemberNickname = async (scheduleId: string, characterId: string, newNickname: string) => {
+    await updateMemberNickname(scheduleId, characterId, newNickname);
+  };
+
+  // 검색된 닉네임의 직업 가져오기
+  const getSearchedUserJob = (schedule: Schedule, nickname: string): string => {
+    const searchTerm = nickname.trim().toLowerCase();
+
+    // 파티장인 경우
+    if (schedule.leaderNickname.toLowerCase().includes(searchTerm)) {
+      return schedule.leaderJob || '파티장';
+    }
+
+    // 파티원인 경우
+    const member = schedule.members?.find(m =>
+      m.nickname.toLowerCase().includes(searchTerm)
+    );
+    if (member) {
+      return member.job;
+    }
+
+    return '-';
   };
 
   // 검색 결과 이미지로 저장
@@ -237,32 +270,50 @@ const HomePage: React.FC = () => {
         </div>
       )}
 
-      <div className="filter-tabs">
-        <button
-          className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          전체
-        </button>
-        <button
-          className={`filter-tab ${filter === '어비스' ? 'active' : ''}`}
-          onClick={() => setFilter('어비스')}
-        >
-          어비스
-        </button>
-        <button
-          className={`filter-tab ${filter === '레이드' ? 'active' : ''}`}
-          onClick={() => setFilter('레이드')}
-        >
-          레이드
-        </button>
+      <div className="filter-section">
+        <div className="filter-tabs">
+          <button
+            className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => setFilter('all')}
+          >
+            전체
+          </button>
+          <button
+            className={`filter-tab ${filter === '어비스' ? 'active' : ''}`}
+            onClick={() => setFilter('어비스')}
+          >
+            어비스
+          </button>
+          <button
+            className={`filter-tab ${filter === '레이드' ? 'active' : ''}`}
+            onClick={() => setFilter('레이드')}
+          >
+            레이드
+          </button>
+        </div>
+        <div className="view-mode-toggle">
+          <button
+            className={`view-mode-btn ${viewMode === 'card' ? 'active' : ''}`}
+            onClick={() => setViewMode('card')}
+            title="카드 보기"
+          >
+            카드
+          </button>
+          <button
+            className={`view-mode-btn ${viewMode === 'table' ? 'active' : ''}`}
+            onClick={() => setViewMode('table')}
+            title="표 보기"
+          >
+            표
+          </button>
+        </div>
       </div>
 
       {filteredSchedules.length === 0 ? (
         <div className="empty-state">
           <p>등록된 일정이 없습니다</p>
         </div>
-      ) : (
+      ) : viewMode === 'card' ? (
         <div className="schedule-list" ref={scheduleListRef}>
           {filteredSchedules.map((schedule) => (
             <ScheduleCard
@@ -276,12 +327,76 @@ const HomePage: React.FC = () => {
               onAddMemberDirectly={handleAddMemberDirectly}
               onUpdateMemberJob={handleUpdateMemberJob}
               onUpdateLeaderJob={handleUpdateLeaderJob}
+              onUpdateLeaderNickname={handleUpdateLeaderNickname}
+              onUpdateMemberNickname={handleUpdateMemberNickname}
               onEditSchedule={handleEditSchedule}
               onCopySchedule={handleCopySchedule}
               searchHighlight={searchNickname.trim()}
               availableCharacters={availableCharacters}
             />
           ))}
+        </div>
+      ) : (
+        <div className="schedule-table-container">
+          <table className="schedule-table">
+            <thead>
+              <tr>
+                <th>날짜</th>
+                <th>시간</th>
+                <th>컨텐츠</th>
+                <th>난이도</th>
+                <th>제목</th>
+                <th>파티장</th>
+                <th>인원</th>
+                <th>상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSchedules.map((schedule) => {
+                const currentCount = (schedule.members?.length || 0) + 1;
+                const isFull = currentCount >= schedule.maxMembers;
+                const isPastSchedule = new Date(`${schedule.date}T${schedule.time}`) < new Date();
+
+                return (
+                  <tr
+                    key={schedule.id}
+                    className={`${schedule.isClosed ? 'closed' : ''} ${isPastSchedule ? 'past' : ''}`}
+                    onClick={() => setViewMode('card')}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td>{format(new Date(schedule.date), 'M/d (E)', { locale: ko })}</td>
+                    <td>{schedule.time}</td>
+                    <td>
+                      <span className={`content-badge ${schedule.type}`}>
+                        {schedule.contentName}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`difficulty-badge ${schedule.difficulty}`}>
+                        {schedule.difficulty}
+                      </span>
+                    </td>
+                    <td className="title-cell">{schedule.title}</td>
+                    <td>{schedule.leaderNickname.split(' (')[0]}</td>
+                    <td className={isFull ? 'full' : ''}>
+                      {currentCount}/{schedule.maxMembers}
+                    </td>
+                    <td>
+                      {isPastSchedule ? (
+                        <span className="status-badge past">종료</span>
+                      ) : schedule.isClosed ? (
+                        <span className="status-badge closed">마감</span>
+                      ) : isFull ? (
+                        <span className="status-badge full">인원마감</span>
+                      ) : (
+                        <span className="status-badge open">모집중</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -302,6 +417,7 @@ const HomePage: React.FC = () => {
                 <th>컨텐츠</th>
                 <th>난이도</th>
                 <th>파티장</th>
+                <th>직업</th>
                 <th>인원</th>
               </tr>
             </thead>
@@ -312,6 +428,7 @@ const HomePage: React.FC = () => {
                   <td>{schedule.contentName}</td>
                   <td>{schedule.difficulty}</td>
                   <td>{schedule.leaderNickname.split(' (')[0]}</td>
+                  <td>{getSearchedUserJob(schedule, searchNickname)}</td>
                   <td>{(schedule.members?.length || 0) + 1}/{schedule.maxMembers}</td>
                 </tr>
               ))}

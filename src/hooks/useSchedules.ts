@@ -157,6 +157,32 @@ export const useSchedules = () => {
     []
   );
 
+  const updateLeaderNickname = useCallback(
+    async (scheduleId: string, newNickname: string) => {
+      try {
+        setError(null);
+        await scheduleService.updateLeaderNickname(scheduleId, newNickname);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '파티장 닉네임 변경 실패');
+        throw err;
+      }
+    },
+    []
+  );
+
+  const updateMemberNickname = useCallback(
+    async (scheduleId: string, characterId: string, newNickname: string) => {
+      try {
+        setError(null);
+        await scheduleService.updateMemberNickname(scheduleId, characterId, newNickname);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '파티원 닉네임 변경 실패');
+        throw err;
+      }
+    },
+    []
+  );
+
   return {
     schedules,
     loading,
@@ -173,5 +199,7 @@ export const useSchedules = () => {
     addMemberDirectly,
     updateMemberJob,
     updateLeaderJob,
+    updateLeaderNickname,
+    updateMemberNickname,
   };
 };

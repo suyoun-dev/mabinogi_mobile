@@ -12,7 +12,7 @@ import './MySchedulePage.css';
 
 const MySchedulePage: React.FC = () => {
   const navigate = useNavigate();
-  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob, updateLeaderJob } = useSchedules();
+  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob, updateLeaderJob, updateLeaderNickname, updateMemberNickname } = useSchedules();
   const { selectedCharacter } = useUser();
   const scheduleTableRef = useRef<HTMLDivElement>(null);
   const [showExportTable, setShowExportTable] = useState(false);
@@ -76,6 +76,14 @@ const MySchedulePage: React.FC = () => {
 
   const handleUpdateLeaderJob = async (scheduleId: string, newJob: JobClass) => {
     await updateLeaderJob(scheduleId, newJob);
+  };
+
+  const handleUpdateLeaderNickname = async (scheduleId: string, newNickname: string) => {
+    await updateLeaderNickname(scheduleId, newNickname);
+  };
+
+  const handleUpdateMemberNickname = async (scheduleId: string, characterId: string, newNickname: string) => {
+    await updateMemberNickname(scheduleId, characterId, newNickname);
   };
 
   // 본인 신청 직업 가져오기
@@ -184,6 +192,8 @@ const MySchedulePage: React.FC = () => {
                 onAddMemberDirectly={handleAddMemberDirectly}
                 onUpdateMemberJob={handleUpdateMemberJob}
                 onUpdateLeaderJob={handleUpdateLeaderJob}
+                onUpdateLeaderNickname={handleUpdateLeaderNickname}
+                onUpdateMemberNickname={handleUpdateMemberNickname}
                 availableCharacters={availableCharacters}
               />
             ))}

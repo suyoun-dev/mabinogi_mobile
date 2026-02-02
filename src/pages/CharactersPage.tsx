@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import type { JobClass, Character } from '../types';
 import { JOB_LIST } from '../types';
-import * as scheduleService from '../services/scheduleService';
 import './CharactersPage.css';
 
 const CharactersPage: React.FC = () => {
@@ -11,40 +10,11 @@ const CharactersPage: React.FC = () => {
   const [editingChar, setEditingChar] = useState<Character | null>(null);
   const [nickname, setNickname] = useState('');
   const [selectedJobs, setSelectedJobs] = useState<JobClass[]>([]);
-  const [existingNicknames, setExistingNicknames] = useState<Set<string>>(new Set());
   const [nicknameError, setNicknameError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Firebase에서 기존 닉네임 목록 불러오기
-  useEffect(() => {
-    const loadExistingNicknames = async () => {
-      try {
-        const schedules = await scheduleService.getAllSchedules();
-        const nicknames = new Set<string>();
-
-        schedules.forEach(schedule => {
-          // 파티장 닉네임
-          if (schedule.leaderNickname) {
-            nicknames.add(schedule.leaderNickname.toLowerCase());
-          }
-          // 파티원 닉네임
-          schedule.members?.forEach(member => {
-            if (member.nickname) {
-              nicknames.add(member.nickname.toLowerCase());
-            }
-          });
-        });
-
-        setExistingNicknames(nicknames);
-      } catch (error) {
-        console.error('닉네임 목록 불러오기 실패:', error);
-      }
-    };
-
-    loadExistingNicknames();
-  }, []);
-
-  // 닉네임 중복 확인
+  // 닉네임 중복 확인 - 자신의 캐릭터 중에서만 중복 확인
+  // (가입 아이디와 인겜닉은 중복 허용, 다른 사용자와도 중복 허용)
   const checkDuplicateNickname = (name: string): boolean => {
     const trimmedName = name.trim().toLowerCase();
 
@@ -54,11 +24,7 @@ const CharactersPage: React.FC = () => {
       (!editingChar || char.id !== editingChar.id)
     );
 
-    // Firebase 일정에서 중복 확인 (수정 시 현재 닉네임 제외)
-    const isDuplicateGlobal = existingNicknames.has(trimmedName) &&
-      (!editingChar || editingChar.nickname.toLowerCase() !== trimmedName);
-
-    return isDuplicateLocal || isDuplicateGlobal;
+    return isDuplicateLocal;
   };
 
   const handleNicknameChange = (value: string) => {
@@ -164,7 +130,7 @@ const CharactersPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="character-form">
           <h3>{editingChar ? '캐릭터 수정' : '새 캐릭터 등록'}</h3>
           <p className="form-guide">
-            본인의 본캐 닉네임을 입력 후, 직업은 부캐 포함 전체 직업으로 선택!
+            본인의 본캐 닉네임을 입력 후, 직업은 부캐 포함 전체 직업으로 선택 또는 캐릭터 별로 생성
           </p>
 
           <div className="form-group">

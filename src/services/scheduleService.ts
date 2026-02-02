@@ -332,3 +332,56 @@ export const updateLeaderJob = async (
 
   return true;
 };
+
+// 파티장 닉네임 변경
+export const updateLeaderNickname = async (
+  scheduleId: string,
+  newNickname: string
+): Promise<boolean> => {
+  const schedule = await getScheduleById(scheduleId);
+
+  if (!schedule) {
+    throw new Error('일정을 찾을 수 없습니다.');
+  }
+
+  const leaderJob = schedule.leaderJob || '미정';
+  const newLeaderNickname = `${newNickname} (${leaderJob})`;
+
+  await updateSchedule(scheduleId, {
+    leaderNickname: newLeaderNickname,
+  });
+
+  return true;
+};
+
+// 파티원 닉네임 변경
+export const updateMemberNickname = async (
+  scheduleId: string,
+  characterId: string,
+  newNickname: string
+): Promise<boolean> => {
+  const schedule = await getScheduleById(scheduleId);
+
+  if (!schedule) {
+    throw new Error('일정을 찾을 수 없습니다.');
+  }
+
+  const currentMembers = schedule.members || [];
+  const memberIndex = currentMembers.findIndex(
+    (m) => m.characterId === characterId
+  );
+
+  if (memberIndex === -1) {
+    throw new Error('해당 멤버를 찾을 수 없습니다.');
+  }
+
+  const updatedMembers = [...currentMembers];
+  updatedMembers[memberIndex] = {
+    ...updatedMembers[memberIndex],
+    nickname: newNickname,
+  };
+
+  await updateSchedule(scheduleId, { members: updatedMembers });
+
+  return true;
+};

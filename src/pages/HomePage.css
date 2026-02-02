@@ -70,12 +70,21 @@
   color: #FF8E8E;
 }
 
-.filter-tabs {
+/* 필터 섹션 */
+.filter-section {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 8px;
+  flex: 1;
 }
 
 .filter-tab {
@@ -257,4 +266,170 @@
 
 .home-page .export-table tbody tr:nth-child(even) {
   background: rgba(255, 255, 255, 0.03);
+}
+
+/* 보기 모드 토글 */
+.view-mode-toggle {
+  display: flex;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.view-mode-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #888;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-mode-btn:hover {
+  color: #fff;
+}
+
+.view-mode-btn.active {
+  background: #FF8E8E;
+  color: #fff;
+}
+
+/* 스케줄 테이블 뷰 */
+.schedule-table-container {
+  overflow-x: auto;
+  margin: 0 -16px;
+  padding: 0 16px;
+}
+
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(10, 38, 71, 0.8);
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 700px;
+}
+
+.schedule-table th,
+.schedule-table td {
+  padding: 12px 8px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+}
+
+.schedule-table th {
+  background: rgba(255, 142, 142, 0.2);
+  color: #FF8E8E;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.schedule-table td {
+  color: #fff;
+}
+
+.schedule-table tbody tr {
+  transition: background 0.2s;
+}
+
+.schedule-table tbody tr:hover {
+  background: rgba(255, 142, 142, 0.1);
+}
+
+.schedule-table tbody tr.closed {
+  /* 마감된 일정 */
+}
+
+.schedule-table tbody tr.past {
+  opacity: 0.5;
+}
+
+.schedule-table .title-cell {
+  text-align: left;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.schedule-table .full {
+  color: #FF8E8E;
+}
+
+/* 컨텐츠 뱃지 */
+.schedule-table .content-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.schedule-table .content-badge.어비스 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.schedule-table .content-badge.레이드 {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+/* 난이도 뱃지 */
+.schedule-table .difficulty-badge {
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.schedule-table .difficulty-badge.입문 {
+  background: #28a745;
+  color: white;
+}
+
+.schedule-table .difficulty-badge.어려움 {
+  background: #ffc107;
+  color: #000;
+}
+
+.schedule-table .difficulty-badge.매우\ 어려움 {
+  background: #fd7e14;
+  color: white;
+}
+
+.schedule-table .difficulty-badge.지옥 {
+  background: #dc3545;
+  color: white;
+}
+
+/* 상태 뱃지 */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.status-badge.open {
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+  color: white;
+}
+
+.status-badge.closed {
+  background: #4a4a4a;
+  color: #fff;
+}
+
+.status-badge.full {
+  background: #ffc107;
+  color: #000;
+}
+
+.status-badge.past {
+  background: #6c757d;
+  color: #fff;
 }

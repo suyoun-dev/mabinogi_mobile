@@ -26,6 +26,8 @@ interface ScheduleCardProps {
   onAddMemberDirectly?: (scheduleId: string, nickname: string, job: string) => Promise<void>;
   onUpdateMemberJob?: (scheduleId: string, characterId: string, newJob: JobClass) => Promise<void>;
   onUpdateLeaderJob?: (scheduleId: string, newJob: JobClass) => Promise<void>;
+  onUpdateLeaderNickname?: (scheduleId: string, newNickname: string) => Promise<void>;
+  onUpdateMemberNickname?: (scheduleId: string, characterId: string, newNickname: string) => Promise<void>;
   onEditSchedule?: (scheduleId: string, updates: ScheduleEditData) => Promise<void>;
   onCopySchedule?: (schedule: Schedule, includeMembers: boolean) => void;
   searchHighlight?: string; // 검색어 강조 표시용
@@ -42,6 +44,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onAddMemberDirectly,
   onUpdateMemberJob,
   onUpdateLeaderJob,
+  onUpdateLeaderNickname,
+  onUpdateMemberNickname,
   onEditSchedule,
   onCopySchedule,
   searchHighlight,
@@ -55,7 +59,11 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   const [newMemberNickname, setNewMemberNickname] = useState('');
   const [newMemberJob, setNewMemberJob] = useState<string>('미정');
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [editingMemberNicknameId, setEditingMemberNicknameId] = useState<string | null>(null);
+  const [editingMemberNickname, setEditingMemberNickname] = useState('');
   const [editingLeaderJob, setEditingLeaderJob] = useState(false);
+  const [editingLeaderNickname, setEditingLeaderNickname] = useState(false);
+  const [leaderNicknameInput, setLeaderNicknameInput] = useState('');
   const [showCopyOptions, setShowCopyOptions] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showCharacterSuggestions, setShowCharacterSuggestions] = useState(false);
@@ -225,6 +233,36 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
     }
   };
 
+  // 파티장 닉네임 수정
+  const handleUpdateLeaderNickname = async () => {
+    if (!onUpdateLeaderNickname || !leaderNicknameInput.trim()) return;
+    setLoading(true);
+    try {
+      await onUpdateLeaderNickname(schedule.id, leaderNicknameInput.trim());
+      setEditingLeaderNickname(false);
+      setLeaderNicknameInput('');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '닉네임 수정 실패');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 파티원 닉네임 수정
+  const handleUpdateMemberNickname = async (characterId: string) => {
+    if (!onUpdateMemberNickname || !editingMemberNickname.trim()) return;
+    setLoading(true);
+    try {
+      await onUpdateMemberNickname(schedule.id, characterId, editingMemberNickname.trim());
+      setEditingMemberNicknameId(null);
+      setEditingMemberNickname('');
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '닉네임 수정 실패');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleOpenEditForm = () => {
     setEditFormData({
       title: schedule.title,
@@ -287,7 +325,55 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         <div className="leader-info">
           <span className="label">파티장</span>
           <span className={`value ${isLeaderByNickname ? 'my-nickname' : ''}`}>
-            {highlightText(schedule.leaderNickname.split(' (')[0])}
+            {editingLeaderNickname && canEdit && onUpdateLeaderNickname ? (
+              <span className="nickname-edit-container">
+                <input
+                  type="text"
+                  className="nickname-edit-input"
+                  value={leaderNicknameInput}
+                  onChange={(e) => setLeaderNicknameInput(e.target.value)}
+                  placeholder="새 닉네임"
+                  maxLength={20}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleUpdateLeaderNickname();
+                    if (e.key === 'Escape') {
+                      setEditingLeaderNickname(false);
+                      setLeaderNicknameInput('');
+                    }
+                  }}
+                />
+                <button
+                  className="nickname-edit-btn save"
+                  onClick={handleUpdateLeaderNickname}
+                  disabled={loading}
+                >
+                  ✓
+                </button>
+                <button
+                  className="nickname-edit-btn cancel"
+                  onClick={() => {
+                    setEditingLeaderNickname(false);
+                    setLeaderNicknameInput('');
+                  }}
+                >
+                  ✕
+                </button>
+              </span>
+            ) : (
+              <span
+                className={canEdit && onUpdateLeaderNickname ? 'editable-nickname' : ''}
+                onClick={() => {
+                  if (canEdit && onUpdateLeaderNickname) {
+                    setLeaderNicknameInput(schedule.leaderNickname.split(' (')[0]);
+                    setEditingLeaderNickname(true);
+                  }
+                }}
+                title={canEdit && onUpdateLeaderNickname ? '클릭하여 닉네임 변경' : ''}
+              >
+                {highlightText(schedule.leaderNickname.split(' (')[0])}
+              </span>
+            )}
             {editingLeaderJob && canEdit && onUpdateLeaderJob ? (
               <select
                 className="job-edit-select"
@@ -330,12 +416,62 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 (selectedCharacter?.nickname && member.nickname === selectedCharacter.nickname);
               // 본인 또는 수정권한자는 직업 수정 가능
               const canEditMemberJob = (isMyMember || canEdit) && onUpdateMemberJob;
-              const isEditing = editingMemberId === member.characterId;
+              const canEditMemberNickname = canEdit && onUpdateMemberNickname;
+              const isEditingJob = editingMemberId === member.characterId;
+              const isEditingNickname = editingMemberNicknameId === member.characterId;
 
               return (
                 <span key={idx} className={`member-tag ${isMyMember ? 'my-nickname' : ''}`}>
-                  {highlightText(member.nickname)}
-                  {isEditing ? (
+                  {isEditingNickname ? (
+                    <span className="nickname-edit-container inline">
+                      <input
+                        type="text"
+                        className="nickname-edit-input small"
+                        value={editingMemberNickname}
+                        onChange={(e) => setEditingMemberNickname(e.target.value)}
+                        placeholder="새 닉네임"
+                        maxLength={20}
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleUpdateMemberNickname(member.characterId);
+                          if (e.key === 'Escape') {
+                            setEditingMemberNicknameId(null);
+                            setEditingMemberNickname('');
+                          }
+                        }}
+                      />
+                      <button
+                        className="nickname-edit-btn save small"
+                        onClick={() => handleUpdateMemberNickname(member.characterId)}
+                        disabled={loading}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        className="nickname-edit-btn cancel small"
+                        onClick={() => {
+                          setEditingMemberNicknameId(null);
+                          setEditingMemberNickname('');
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ) : (
+                    <span
+                      className={canEditMemberNickname ? 'editable-nickname' : ''}
+                      onClick={() => {
+                        if (canEditMemberNickname) {
+                          setEditingMemberNickname(member.nickname);
+                          setEditingMemberNicknameId(member.characterId);
+                        }
+                      }}
+                      title={canEditMemberNickname ? '클릭하여 닉네임 변경' : ''}
+                    >
+                      {highlightText(member.nickname)}
+                    </span>
+                  )}
+                  {isEditingJob ? (
                     <select
                       className="job-edit-select"
                       value={member.job}
@@ -367,7 +503,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                       </small>
                     </>
                   )}
-                  {canEdit && onRemoveMember && !isEditing && (
+                  {canEdit && onRemoveMember && !isEditingJob && !isEditingNickname && (
                     <button
                       className="member-remove-btn"
                       onClick={() => {
