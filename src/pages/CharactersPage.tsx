@@ -163,6 +163,9 @@ const CharactersPage: React.FC = () => {
       {showForm && (
         <form onSubmit={handleSubmit} className="character-form">
           <h3>{editingChar ? '캐릭터 수정' : '새 캐릭터 등록'}</h3>
+          <p className="form-guide">
+            본인의 본캐 닉네임을 입력 후, 직업은 부캐 포함 전체 직업으로 선택!
+          </p>
 
           <div className="form-group">
             <label>닉네임</label>

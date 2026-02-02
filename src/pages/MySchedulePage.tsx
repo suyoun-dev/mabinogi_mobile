@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
 import ScheduleCard from '../components/ScheduleCard';
-import type { JobClass, Schedule } from '../types';
+import type { Character, JobClass, Schedule } from '../types';
+import { getAllCharacters } from '../services/characterService';
 import html2canvas from 'html2canvas';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -11,15 +12,29 @@ import './MySchedulePage.css';
 
 const MySchedulePage: React.FC = () => {
   const navigate = useNavigate();
-  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob } = useSchedules();
+  const { schedules, loading, joinParty, leaveParty, toggleClosed, deleteSchedule, removeMember, addMemberDirectly, updateMemberJob, updateLeaderJob } = useSchedules();
   const { selectedCharacter } = useUser();
   const scheduleTableRef = useRef<HTMLDivElement>(null);
   const [showExportTable, setShowExportTable] = useState(false);
+  const [availableCharacters, setAvailableCharacters] = useState<Character[]>([]);
+
+  // 등록된 모든 캐릭터 목록 로드
+  useEffect(() => {
+    const loadCharacters = async () => {
+      const characters = await getAllCharacters();
+      setAvailableCharacters(characters);
+    };
+    loadCharacters();
+  }, []);
 
   const mySchedules = selectedCharacter
     ? schedules.filter((schedule) => {
+        // ID 기반 매칭
         if (schedule.leaderId === selectedCharacter.id) return true;
         if (schedule.members?.some((m) => m.characterId === selectedCharacter.id)) return true;
+        // 닉네임 기반 매칭 (타인이 등록한 경우)
+        if (schedule.leaderNickname.split(' (')[0] === selectedCharacter.nickname) return true;
+        if (schedule.members?.some((m) => m.nickname === selectedCharacter.nickname)) return true;
         return false;
       })
     : [];
@@ -59,13 +74,26 @@ const MySchedulePage: React.FC = () => {
     await updateMemberJob(scheduleId, characterId, newJob);
   };
 
+  const handleUpdateLeaderJob = async (scheduleId: string, newJob: JobClass) => {
+    await updateLeaderJob(scheduleId, newJob);
+  };
+
   // 본인 신청 직업 가져오기
   const getMyJob = (schedule: Schedule): string => {
+    // ID 기반 매칭
     if (schedule.leaderId === selectedCharacter?.id) {
       return schedule.leaderJob || '파티장';
     }
+    // 닉네임 기반 매칭 (파티장)
+    if (schedule.leaderNickname.split(' (')[0] === selectedCharacter?.nickname) {
+      return schedule.leaderJob || '파티장';
+    }
+    // ID 기반 멤버 매칭
     const myMember = schedule.members?.find(m => m.characterId === selectedCharacter?.id);
-    return myMember?.job || '-';
+    if (myMember) return myMember.job;
+    // 닉네임 기반 멤버 매칭
+    const myMemberByNickname = schedule.members?.find(m => m.nickname === selectedCharacter?.nickname);
+    return myMemberByNickname?.job || '-';
   };
 
   const handleDownloadImage = async () => {
@@ -155,6 +183,8 @@ const MySchedulePage: React.FC = () => {
                 onRemoveMember={handleRemoveMember}
                 onAddMemberDirectly={handleAddMemberDirectly}
                 onUpdateMemberJob={handleUpdateMemberJob}
+                onUpdateLeaderJob={handleUpdateLeaderJob}
+                availableCharacters={availableCharacters}
               />
             ))}
           </div>

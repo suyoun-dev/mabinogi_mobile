@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import type { Schedule, JobClass, DifficultyType } from '../types';
-import { JOB_LIST, JOB_LIST_WITH_UNDECIDED, DIFFICULTY_LIST } from '../types';
+import React, { useState, useMemo } from 'react';
+import type { Schedule, JobClass, DifficultyType, Character } from '../types';
+import { JOB_LIST, DIFFICULTY_LIST } from '../types';
 import { useUser } from '../contexts/UserContext';
 import { useAuth } from '../contexts/AuthContext';
 import { format, parseISO, isToday, isTomorrow, isPast } from 'date-fns';
@@ -29,6 +29,7 @@ interface ScheduleCardProps {
   onEditSchedule?: (scheduleId: string, updates: ScheduleEditData) => Promise<void>;
   onCopySchedule?: (schedule: Schedule, includeMembers: boolean) => void;
   searchHighlight?: string; // 검색어 강조 표시용
+  availableCharacters?: Character[]; // 등록된 캐릭터 목록 (파티원 추가 시 선택용)
 }
 
 const ScheduleCard: React.FC<ScheduleCardProps> = ({
@@ -44,6 +45,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onEditSchedule,
   onCopySchedule,
   searchHighlight,
+  availableCharacters,
 }) => {
   const { selectedCharacter } = useUser();
   const { user } = useAuth();
@@ -56,6 +58,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   const [editingLeaderJob, setEditingLeaderJob] = useState(false);
   const [showCopyOptions, setShowCopyOptions] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showCharacterSuggestions, setShowCharacterSuggestions] = useState(false);
+  const [selectedCharacterJobs, setSelectedCharacterJobs] = useState<JobClass[]>([]);
   const [editFormData, setEditFormData] = useState<ScheduleEditData>({
     title: schedule.title,
     date: schedule.date,
@@ -64,6 +68,34 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
     note: schedule.note || '',
     difficulty: schedule.difficulty,
   });
+
+  // 파티원 추가 시 등록된 캐릭터 필터링 (이미 파티에 있는 멤버 제외)
+  const filteredCharacters = useMemo(() => {
+    if (!availableCharacters || !newMemberNickname.trim()) return [];
+
+    const existingNicknames = [
+      schedule.leaderNickname.split(' (')[0],
+      ...(schedule.members?.map(m => m.nickname) || [])
+    ];
+
+    return availableCharacters
+      .filter(char =>
+        !existingNicknames.includes(char.nickname) &&
+        char.nickname.toLowerCase().includes(newMemberNickname.toLowerCase())
+      )
+      .slice(0, 5); // 최대 5개만 표시
+  }, [availableCharacters, newMemberNickname, schedule.leaderNickname, schedule.members]);
+
+  // 캐릭터 선택 시 처리
+  const handleSelectCharacter = (character: Character) => {
+    setNewMemberNickname(character.nickname);
+    setSelectedCharacterJobs(character.jobs);
+    setShowCharacterSuggestions(false);
+    // 첫 번째 직업을 기본 선택 (있으면)
+    if (character.jobs.length > 0) {
+      setNewMemberJob(character.jobs[0]);
+    }
+  };
 
   const isAdmin = user?.role === 'admin';
 
@@ -474,30 +506,75 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
             <span className="label">파티원 직접 추가</span>
             <button
               className="close-btn"
-              onClick={() => setShowAddMember(false)}
+              onClick={() => {
+                setShowAddMember(false);
+                setSelectedCharacterJobs([]);
+              }}
             >
               ×
             </button>
           </div>
           <div className="add-member-inputs">
-            <input
-              type="text"
-              value={newMemberNickname}
-              onChange={(e) => setNewMemberNickname(e.target.value)}
-              placeholder="닉네임"
-              className="add-member-input"
-              maxLength={20}
-            />
+            <div className="nickname-input-container">
+              <input
+                type="text"
+                value={newMemberNickname}
+                onChange={(e) => {
+                  setNewMemberNickname(e.target.value);
+                  setShowCharacterSuggestions(true);
+                  setSelectedCharacterJobs([]);
+                }}
+                onFocus={() => setShowCharacterSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowCharacterSuggestions(false), 200)}
+                placeholder="닉네임 (검색 또는 직접 입력)"
+                className="add-member-input"
+                maxLength={20}
+              />
+              {showCharacterSuggestions && filteredCharacters.length > 0 && (
+                <div className="character-suggestions">
+                  {filteredCharacters.map((char) => (
+                    <div
+                      key={char.id}
+                      className="character-suggestion-item"
+                      onMouseDown={() => handleSelectCharacter(char)}
+                    >
+                      <span className="char-nickname">{char.nickname}</span>
+                      <span className="char-jobs">{char.jobs.slice(0, 3).join(', ')}{char.jobs.length > 3 ? '...' : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             <select
               value={newMemberJob}
               onChange={(e) => setNewMemberJob(e.target.value)}
               className="add-member-select"
             >
-              {JOB_LIST_WITH_UNDECIDED.map((job) => (
-                <option key={job} value={job}>
-                  {job}
-                </option>
-              ))}
+              <option value="미정">미정</option>
+              {selectedCharacterJobs.length > 0 ? (
+                <>
+                  <optgroup label="선택된 캐릭터 직업">
+                    {selectedCharacterJobs.map((job) => (
+                      <option key={job} value={job}>
+                        {job}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="전체 직업">
+                    {JOB_LIST.filter(job => !selectedCharacterJobs.includes(job)).map((job) => (
+                      <option key={job} value={job}>
+                        {job}
+                      </option>
+                    ))}
+                  </optgroup>
+                </>
+              ) : (
+                JOB_LIST.map((job) => (
+                  <option key={job} value={job}>
+                    {job}
+                  </option>
+                ))
+              )}
             </select>
             <button
               className="btn btn-primary btn-sm"

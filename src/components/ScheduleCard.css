@@ -580,3 +580,60 @@
 .edit-form-actions .btn {
   flex: 1;
 }
+
+/* 닉네임 입력 컨테이너 - 캐릭터 선택 자동완성 */
+.nickname-input-container {
+  position: relative;
+  flex: 1;
+  min-width: 100px;
+}
+
+.nickname-input-container .add-member-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 캐릭터 추천 드롭다운 */
+.character-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #144272;
+  border: 1px solid rgba(255, 142, 142, 0.5);
+  border-radius: 8px;
+  margin-top: 4px;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.character-suggestion-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.2s;
+}
+
+.character-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.character-suggestion-item:hover {
+  background: rgba(255, 142, 142, 0.2);
+}
+
+.character-suggestion-item .char-nickname {
+  font-size: 0.9rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+.character-suggestion-item .char-jobs {
+  font-size: 0.75rem;
+  color: #888;
+}

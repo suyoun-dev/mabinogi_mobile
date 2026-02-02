@@ -189,10 +189,72 @@
   background: rgba(23, 162, 184, 0.3);
 }
 
-/* 간단히 저장 모드 - 비고, 액션 버튼 숨김 */
-.save-mode-simple .schedule-note,
-.save-mode-simple .schedule-actions,
-.save-mode-simple .add-member-form,
-.save-mode-simple .edit-schedule-form {
-  display: none !important;
+/* 이미지 내보내기용 테이블 스타일 */
+.home-page .export-table-container {
+  position: fixed;
+  top: -9999px;
+  left: -9999px;
+  background: #0F3360;
+  padding: 24px;
+  border-radius: 16px;
+  min-width: 500px;
+}
+
+.home-page .export-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.home-page .export-header h2 {
+  color: #FFFFFF;
+  font-size: 1.4rem;
+  margin: 0 0 8px 0;
+}
+
+.home-page .export-nickname {
+  color: #FF8E8E;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.home-page .export-date {
+  color: #7D7DB5;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.home-page .export-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.home-page .export-table th,
+.home-page .export-table td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.home-page .export-table th {
+  background: rgba(125, 125, 181, 0.3);
+  color: #FFFFFF;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.home-page .export-table td {
+  color: #FFFFFF;
+  font-size: 0.85rem;
+}
+
+.home-page .export-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.home-page .export-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
 }

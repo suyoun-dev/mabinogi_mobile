@@ -1,10 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSchedules } from '../hooks/useSchedules';
 import { useUser } from '../contexts/UserContext';
 import ScheduleCard from '../components/ScheduleCard';
-import type { Schedule, JobClass, ContentType, DifficultyType } from '../types';
+import type { Schedule, JobClass, ContentType, DifficultyType, Character } from '../types';
+import { getAllCharacters } from '../services/characterService';
 import html2canvas from 'html2canvas';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
 import './HomePage.css';
 
 type SaveMode = 'simple' | 'full' | 'all';
@@ -17,7 +20,19 @@ const HomePage: React.FC = () => {
   const [searchNickname, setSearchNickname] = useState('');
   const [savingImage, setSavingImage] = useState(false);
   const [showSaveOptions, setShowSaveOptions] = useState(false);
+  const [showExportTable, setShowExportTable] = useState(false);
+  const [availableCharacters, setAvailableCharacters] = useState<Character[]>([]);
   const scheduleListRef = useRef<HTMLDivElement>(null);
+  const exportTableRef = useRef<HTMLDivElement>(null);
+
+  // 등록된 모든 캐릭터 목록 로드
+  useEffect(() => {
+    const loadCharacters = async () => {
+      const characters = await getAllCharacters();
+      setAvailableCharacters(characters);
+    };
+    loadCharacters();
+  }, []);
 
   const filteredSchedules = schedules.filter((schedule) => {
     // 타입 필터
@@ -101,36 +116,59 @@ const HomePage: React.FC = () => {
 
   // 검색 결과 이미지로 저장
   const handleSaveSearchResults = async (mode: SaveMode = 'full') => {
-    if (!scheduleListRef.current || filteredSchedules.length === 0) return;
+    if (filteredSchedules.length === 0) return;
 
     setSavingImage(true);
     setShowSaveOptions(false);
 
     try {
-      // 저장 모드에 따라 클래스 추가
-      const container = scheduleListRef.current;
       if (mode === 'simple') {
-        container.classList.add('save-mode-simple');
+        // 간단히 모드: 테이블 형식으로 저장
+        setShowExportTable(true);
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        if (!exportTableRef.current) {
+          setShowExportTable(false);
+          setSavingImage(false);
+          return;
+        }
+
+        const canvas = await html2canvas(exportTableRef.current, {
+          backgroundColor: '#0F3360',
+          scale: 2,
+        });
+
+        setShowExportTable(false);
+
+        const link = document.createElement('a');
+        const prefix = searchNickname.trim() || '전체';
+        link.download = `${prefix}_일정_간단_${new Date().toLocaleDateString('ko-KR')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } else {
+        // 전체 모드: 스케줄 카드 형식으로 저장
+        if (!scheduleListRef.current) {
+          setSavingImage(false);
+          return;
+        }
+
+        const canvas = await html2canvas(scheduleListRef.current, {
+          backgroundColor: '#0a2647',
+          scale: 2,
+        });
+
+        const link = document.createElement('a');
+        const prefix = searchNickname.trim() || '전체';
+        link.download = `${prefix}_일정_${new Date().toLocaleDateString('ko-KR')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
       }
-
-      const canvas = await html2canvas(container, {
-        backgroundColor: '#0a2647',
-        scale: 2,
-      });
-
-      // 클래스 제거
-      container.classList.remove('save-mode-simple');
-
-      const link = document.createElement('a');
-      const prefix = searchNickname.trim() || '전체';
-      link.download = `${prefix}_일정_${new Date().toLocaleDateString('ko-KR')}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
     } catch (error) {
       alert('이미지 저장에 실패했습니다.');
       console.error(error);
     } finally {
       setSavingImage(false);
+      setShowExportTable(false);
     }
   };
 
@@ -241,8 +279,44 @@ const HomePage: React.FC = () => {
               onEditSchedule={handleEditSchedule}
               onCopySchedule={handleCopySchedule}
               searchHighlight={searchNickname.trim()}
+              availableCharacters={availableCharacters}
             />
           ))}
+        </div>
+      )}
+
+      {/* 이미지 내보내기용 테이블 (화면에 숨김) */}
+      {showExportTable && (
+        <div className="export-table-container" ref={exportTableRef}>
+          <div className="export-header">
+            <h2>새녘 모비노기 스케줄러</h2>
+            {searchNickname.trim() && (
+              <p className="export-nickname">{searchNickname}님의 일정</p>
+            )}
+            <p className="export-date">{format(new Date(), 'yyyy년 M월 d일 (E)', { locale: ko })}</p>
+          </div>
+          <table className="export-table">
+            <thead>
+              <tr>
+                <th>날짜/시간</th>
+                <th>컨텐츠</th>
+                <th>난이도</th>
+                <th>파티장</th>
+                <th>인원</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSchedules.map((schedule) => (
+                <tr key={schedule.id}>
+                  <td>{format(new Date(schedule.date), 'M/d')} {schedule.time}</td>
+                  <td>{schedule.contentName}</td>
+                  <td>{schedule.difficulty}</td>
+                  <td>{schedule.leaderNickname.split(' (')[0]}</td>
+                  <td>{(schedule.members?.length || 0) + 1}/{schedule.maxMembers}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
     </div>
