@@ -7,6 +7,7 @@ import type { Schedule, JobClass, ContentType, DifficultyType, Character } from 
 import { getAllCharacters } from '../services/characterService';
 import html2canvas from 'html2canvas';
 import { format } from 'date-fns';
+import { exportSchedulesToExcel } from '../utils/excelExport';
 import { ko } from 'date-fns/locale';
 import './HomePage.css';
 
@@ -145,6 +146,18 @@ const HomePage: React.FC = () => {
     }
 
     return '-';
+  };
+
+  // 엑셀로 다운로드
+  const handleExportExcel = () => {
+    if (filteredSchedules.length === 0) {
+      alert('내보낼 일정이 없습니다.');
+      return;
+    }
+    const prefix = searchNickname.trim() || '전체';
+    const today = new Date();
+    const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+    exportSchedulesToExcel(filteredSchedules, `마비노기_${prefix}_일정_${dateStr}.xlsx`);
   };
 
   // 검색 결과 이미지로 저장
@@ -291,20 +304,29 @@ const HomePage: React.FC = () => {
             레이드
           </button>
         </div>
-        <div className="view-mode-toggle">
+        <div className="filter-actions">
+          <div className="view-mode-toggle">
+            <button
+              className={`view-mode-btn ${viewMode === 'card' ? 'active' : ''}`}
+              onClick={() => setViewMode('card')}
+              title="카드 보기"
+            >
+              카드
+            </button>
+            <button
+              className={`view-mode-btn ${viewMode === 'table' ? 'active' : ''}`}
+              onClick={() => setViewMode('table')}
+              title="표 보기"
+            >
+              표
+            </button>
+          </div>
           <button
-            className={`view-mode-btn ${viewMode === 'card' ? 'active' : ''}`}
-            onClick={() => setViewMode('card')}
-            title="카드 보기"
+            className="btn-excel-export"
+            onClick={handleExportExcel}
+            title="엑셀로 다운로드"
           >
-            카드
-          </button>
-          <button
-            className={`view-mode-btn ${viewMode === 'table' ? 'active' : ''}`}
-            onClick={() => setViewMode('table')}
-            title="표 보기"
-          >
-            표
+            엑셀
           </button>
         </div>
       </div>

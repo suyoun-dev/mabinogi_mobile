@@ -433,3 +433,33 @@
   background: #6c757d;
   color: #fff;
 }
+
+/* 필터 액션 영역 */
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 엑셀 내보내기 버튼 */
+.btn-excel-export {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #217346 0%, #185c37 100%);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-excel-export:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(33, 115, 70, 0.4);
+}
+
+.btn-excel-export:active {
+  transform: translateY(0);
+}
