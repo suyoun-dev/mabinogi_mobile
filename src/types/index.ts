@@ -78,6 +78,14 @@ export interface Schedule {
   updatedAt: number;
 }
 
+// 이벤트 정보
+export interface GameEvent {
+  id: string;
+  name: string; // 이벤트 이름
+  endDate: string; // YYYY-MM-DD 종료일
+  createdAt: number;
+}
+
 // 사용자 프로필 (로컬 저장)
 export interface UserProfile {
   selectedCharacterId: string | null;
