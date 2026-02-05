@@ -188,6 +188,18 @@
   flex: 1;
 }
 
+.event-info.editable {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  transition: background 0.2s;
+}
+
+.event-info.editable:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .event-name {
   color: #fff;
   font-size: 13px;
@@ -262,6 +274,20 @@
 .event-delete-btn:hover {
   background: rgba(255, 107, 107, 0.3);
   color: #ff6b6b;
+}
+
+/* 수정 모드 */
+.event-item.editing {
+  border-left-color: #ffc107;
+  background: rgba(255, 193, 7, 0.08);
+  padding: 10px;
+}
+
+.event-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 
 /* 관리자 - 이벤트 추가 영역 */

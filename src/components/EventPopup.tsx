@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { subscribeToEvents, createEvent, deleteEvent } from '../services/eventService';
+import { subscribeToEvents, createEvent, deleteEvent, updateEvent } from '../services/eventService';
 import type { GameEvent } from '../types';
 import './EventPopup.css';
 
@@ -11,6 +11,10 @@ const EventPopup: React.FC = () => {
   const [newEventName, setNewEventName] = useState('');
   const [newEventEndDate, setNewEventEndDate] = useState('');
   const [newEventEndTime, setNewEventEndTime] = useState('23:59');
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editEndDate, setEditEndDate] = useState('');
+  const [editEndTime, setEditEndTime] = useState('');
   const { isAdmin } = useAuth();
 
   useEffect(() => {
@@ -88,6 +92,39 @@ const EventPopup: React.FC = () => {
     }
   };
 
+  // 수정 모드 시작
+  const startEditing = (event: GameEvent) => {
+    setEditingEventId(event.id);
+    setEditName(event.name);
+    setEditEndDate(event.endDate);
+    setEditEndTime(event.endTime || '23:59');
+  };
+
+  // 수정 취소
+  const cancelEditing = () => {
+    setEditingEventId(null);
+    setEditName('');
+    setEditEndDate('');
+    setEditEndTime('');
+  };
+
+  // 수정 저장
+  const handleUpdateEvent = async () => {
+    if (!editingEventId || !editName.trim() || !editEndDate) return;
+
+    try {
+      await updateEvent(editingEventId, {
+        name: editName.trim(),
+        endDate: editEndDate,
+        endTime: editEndTime || '23:59',
+      });
+      cancelEditing();
+    } catch (error) {
+      console.error('이벤트 수정 실패:', error);
+      alert('이벤트 수정에 실패했습니다.');
+    }
+  };
+
   // 오늘 날짜 (최소 날짜 설정용)
   const today = new Date().toISOString().split('T')[0];
 
@@ -122,9 +159,60 @@ const EventPopup: React.FC = () => {
               <ul className="event-list">
                 {events.map((event) => {
                   const daysClass = getDaysLeftClass(event.endDate, event.endTime);
+                  const isEditing = editingEventId === event.id;
+
+                  if (isEditing) {
+                    return (
+                      <li key={event.id} className="event-item editing">
+                        <div className="event-edit-form">
+                          <input
+                            type="text"
+                            className="event-input"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            maxLength={50}
+                          />
+                          <div className="event-datetime-row">
+                            <input
+                              type="date"
+                              className="event-input event-date-input"
+                              value={editEndDate}
+                              onChange={(e) => setEditEndDate(e.target.value)}
+                            />
+                            <input
+                              type="time"
+                              className="event-input event-time-input"
+                              value={editEndTime}
+                              onChange={(e) => setEditEndTime(e.target.value)}
+                            />
+                          </div>
+                          <div className="event-form-actions">
+                            <button
+                              className="event-btn event-btn-confirm"
+                              onClick={handleUpdateEvent}
+                              disabled={!editName.trim() || !editEndDate}
+                            >
+                              저장
+                            </button>
+                            <button
+                              className="event-btn event-btn-cancel"
+                              onClick={cancelEditing}
+                            >
+                              취소
+                            </button>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  }
+
                   return (
                     <li key={event.id} className={`event-item ${daysClass}`}>
-                      <div className="event-info">
+                      <div
+                        className={`event-info ${isAdmin ? 'editable' : ''}`}
+                        onClick={() => isAdmin && startEditing(event)}
+                        title={isAdmin ? '클릭하여 수정' : undefined}
+                      >
                         <span className="event-name">{event.name}</span>
                         <span className="event-date">
                           ~ {event.endDate.replace(/-/g, '.')} {event.endTime || '23:59'}
