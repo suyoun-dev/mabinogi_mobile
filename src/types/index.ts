@@ -83,6 +83,7 @@ export interface GameEvent {
   id: string;
   name: string; // 이벤트 이름
   endDate: string; // YYYY-MM-DD 종료일
+  endTime: string; // HH:mm 종료 시간
   createdAt: number;
 }
 

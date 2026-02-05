@@ -10,6 +10,7 @@ const EventPopup: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newEventName, setNewEventName] = useState('');
   const [newEventEndDate, setNewEventEndDate] = useState('');
+  const [newEventEndTime, setNewEventEndTime] = useState('23:59');
   const { isAdmin } = useAuth();
 
   useEffect(() => {
@@ -19,25 +20,35 @@ const EventPopup: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // 남은 일수 계산
-  const getDaysLeft = (endDate: string): number => {
-    const end = new Date(endDate + 'T23:59:59');
+  // 남은 시간 계산
+  const getTimeLeft = (endDate: string, endTime: string): number => {
+    const end = new Date(`${endDate}T${endTime || '23:59'}:00`);
     const now = new Date();
-    const diff = end.getTime() - now.getTime();
+    return end.getTime() - now.getTime();
+  };
+
+  // 남은 일수
+  const getDaysLeft = (endDate: string, endTime: string): number => {
+    const diff = getTimeLeft(endDate, endTime);
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
-  // 남은 일수 텍스트
-  const getDaysLeftText = (endDate: string): string => {
-    const days = getDaysLeft(endDate);
-    if (days < 0) return '종료됨';
+  // 남은 시간 텍스트
+  const getDaysLeftText = (endDate: string, endTime: string): string => {
+    const diff = getTimeLeft(endDate, endTime);
+    if (diff < 0) return '종료됨';
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours < 24) return `${hours}시간`;
+
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
     if (days === 0) return 'D-Day';
     return `D-${days}`;
   };
 
   // 남은 일수 색상 클래스
-  const getDaysLeftClass = (endDate: string): string => {
-    const days = getDaysLeft(endDate);
+  const getDaysLeftClass = (endDate: string, endTime: string): string => {
+    const days = getDaysLeft(endDate, endTime);
     if (days < 0) return 'expired';
     if (days <= 3) return 'urgent';
     if (days <= 7) return 'soon';
@@ -45,24 +56,36 @@ const EventPopup: React.FC = () => {
   };
 
   // 진행중인 이벤트 수
-  const activeEventCount = events.filter(e => getDaysLeft(e.endDate) >= 0).length;
+  const activeEventCount = events.filter(e => getTimeLeft(e.endDate, e.endTime) >= 0).length;
 
   const handleAddEvent = async () => {
     if (!newEventName.trim() || !newEventEndDate) return;
 
-    await createEvent({
-      name: newEventName.trim(),
-      endDate: newEventEndDate,
-    });
+    try {
+      await createEvent({
+        name: newEventName.trim(),
+        endDate: newEventEndDate,
+        endTime: newEventEndTime || '23:59',
+      });
 
-    setNewEventName('');
-    setNewEventEndDate('');
-    setShowAddForm(false);
+      setNewEventName('');
+      setNewEventEndDate('');
+      setNewEventEndTime('23:59');
+      setShowAddForm(false);
+    } catch (error) {
+      console.error('이벤트 등록 실패:', error);
+      alert('이벤트 등록에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   const handleDeleteEvent = async (eventId: string) => {
     if (!confirm('이 이벤트를 삭제하시겠습니까?')) return;
-    await deleteEvent(eventId);
+    try {
+      await deleteEvent(eventId);
+    } catch (error) {
+      console.error('이벤트 삭제 실패:', error);
+      alert('이벤트 삭제에 실패했습니다.');
+    }
   };
 
   // 오늘 날짜 (최소 날짜 설정용)
@@ -98,18 +121,18 @@ const EventPopup: React.FC = () => {
             ) : (
               <ul className="event-list">
                 {events.map((event) => {
-                  const daysClass = getDaysLeftClass(event.endDate);
+                  const daysClass = getDaysLeftClass(event.endDate, event.endTime);
                   return (
                     <li key={event.id} className={`event-item ${daysClass}`}>
                       <div className="event-info">
                         <span className="event-name">{event.name}</span>
                         <span className="event-date">
-                          ~ {event.endDate.replace(/-/g, '.')}
+                          ~ {event.endDate.replace(/-/g, '.')} {event.endTime || '23:59'}
                         </span>
                       </div>
                       <div className="event-right">
                         <span className={`event-dday ${daysClass}`}>
-                          {getDaysLeftText(event.endDate)}
+                          {getDaysLeftText(event.endDate, event.endTime)}
                         </span>
                         {isAdmin && (
                           <button
@@ -140,13 +163,21 @@ const EventPopup: React.FC = () => {
                       onChange={(e) => setNewEventName(e.target.value)}
                       maxLength={50}
                     />
-                    <input
-                      type="date"
-                      className="event-input event-date-input"
-                      value={newEventEndDate}
-                      onChange={(e) => setNewEventEndDate(e.target.value)}
-                      min={today}
-                    />
+                    <div className="event-datetime-row">
+                      <input
+                        type="date"
+                        className="event-input event-date-input"
+                        value={newEventEndDate}
+                        onChange={(e) => setNewEventEndDate(e.target.value)}
+                        min={today}
+                      />
+                      <input
+                        type="time"
+                        className="event-input event-time-input"
+                        value={newEventEndTime}
+                        onChange={(e) => setNewEventEndTime(e.target.value)}
+                      />
+                    </div>
                     <div className="event-form-actions">
                       <button
                         className="event-btn event-btn-confirm"
@@ -161,6 +192,7 @@ const EventPopup: React.FC = () => {
                           setShowAddForm(false);
                           setNewEventName('');
                           setNewEventEndDate('');
+                          setNewEventEndTime('23:59');
                         }}
                       >
                         취소

@@ -277,6 +277,20 @@
   gap: 8px;
 }
 
+.event-datetime-row {
+  display: flex;
+  gap: 8px;
+}
+
+.event-datetime-row .event-date-input {
+  flex: 1;
+}
+
+.event-datetime-row .event-time-input {
+  width: 110px;
+  flex-shrink: 0;
+}
+
 .event-input {
   width: 100%;
   padding: 10px 12px;
