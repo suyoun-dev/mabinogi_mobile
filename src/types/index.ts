@@ -29,7 +29,7 @@ export type ContentType = '어비스' | '레이드';
 export type DifficultyType = '입문' | '어려움' | '매우 어려움' | '지옥';
 
 // 사용자 역할
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'user' | 'guest';
 
 // 사용자 계정 정보
 export interface UserAccount {

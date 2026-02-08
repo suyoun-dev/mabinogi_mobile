@@ -8,7 +8,7 @@ const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedCharacter } = useUser();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, isGuest, logout } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -31,9 +31,10 @@ const Header: React.FC = () => {
             <span className="user-info">
               {user.nickname}
               {isAdmin && <span className="admin-tag">관리자</span>}
+              {isGuest && <span className="guest-tag">게스트</span>}
             </span>
           )}
-          {selectedCharacter && (
+          {selectedCharacter && !isGuest && (
             <Link to="/characters" className="current-character">
               {selectedCharacter.nickname}
             </Link>
@@ -47,15 +48,19 @@ const Header: React.FC = () => {
         <Link to="/" className={`nav-item ${isActive('/') ? 'active' : ''}`}>
           일정
         </Link>
-        <Link to="/create" className={`nav-item ${isActive('/create') ? 'active' : ''}`}>
-          등록
-        </Link>
-        <Link to="/my-schedule" className={`nav-item ${isActive('/my-schedule') ? 'active' : ''}`}>
-          내 일정
-        </Link>
-        <Link to="/characters" className={`nav-item ${isActive('/characters') ? 'active' : ''}`}>
-          캐릭터
-        </Link>
+        {!isGuest && (
+          <>
+            <Link to="/create" className={`nav-item ${isActive('/create') ? 'active' : ''}`}>
+              등록
+            </Link>
+            <Link to="/my-schedule" className={`nav-item ${isActive('/my-schedule') ? 'active' : ''}`}>
+              내 일정
+            </Link>
+            <Link to="/characters" className={`nav-item ${isActive('/characters') ? 'active' : ''}`}>
+              캐릭터
+            </Link>
+          </>
+        )}
         {isAdmin && (
           <Link to="/admin" className={`nav-item ${isActive('/admin') ? 'active' : ''}`}>
             관리

@@ -54,6 +54,15 @@
   font-weight: bold;
 }
 
+.guest-tag {
+  background: #6c757d;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
 .current-character {
   background: rgba(255, 142, 142, 0.2);
   color: #FF8E8E;

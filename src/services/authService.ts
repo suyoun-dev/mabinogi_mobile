@@ -164,9 +164,24 @@ export const clearAuthFromLocal = (): void => {
   localStorage.removeItem(AUTH_STORAGE_KEY);
 };
 
+// 게스트 계정 생성 (로컬 전용, DB 저장 안함)
+export const createGuestUser = (): UserAccount => {
+  return {
+    id: 'guest',
+    code: 'GUEST',
+    nickname: '게스트',
+    role: 'guest',
+    createdAt: Date.now(),
+  };
+};
+
 // 권한 확인
 export const isAdmin = (user: UserAccount | null): boolean => {
   return user?.role === 'admin';
+};
+
+export const isGuest = (user: UserAccount | null): boolean => {
+  return user?.role === 'guest';
 };
 
 export const canEditSchedule = (
@@ -174,6 +189,7 @@ export const canEditSchedule = (
   scheduleCreatedBy: string
 ): boolean => {
   if (!user) return false;
+  if (user.role === 'guest') return false;
   if (user.role === 'admin') return true;
   return user.id === scheduleCreatedBy;
 };

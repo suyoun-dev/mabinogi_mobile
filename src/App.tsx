@@ -33,6 +33,26 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
+// 회원 전용 라우트 (게스트 제외)
+const MemberRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLoggedIn, isGuest, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="spinner"></div>
+        <p>로딩 중...</p>
+      </div>
+    );
+  }
+
+  if (!isLoggedIn || isGuest) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 // 관리자 전용 라우트
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAdmin, loading } = useAuth();
@@ -73,25 +93,25 @@ function AppContent() {
           <Route
             path="/create"
             element={
-              <ProtectedRoute>
+              <MemberRoute>
                 <CreateSchedulePage />
-              </ProtectedRoute>
+              </MemberRoute>
             }
           />
           <Route
             path="/my-schedule"
             element={
-              <ProtectedRoute>
+              <MemberRoute>
                 <MySchedulePage />
-              </ProtectedRoute>
+              </MemberRoute>
             }
           />
           <Route
             path="/characters"
             element={
-              <ProtectedRoute>
+              <MemberRoute>
                 <CharactersPage />
-              </ProtectedRoute>
+              </MemberRoute>
             }
           />
           <Route

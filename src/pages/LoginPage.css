@@ -233,3 +233,53 @@
   font-size: 1rem;
   width: 100%;
 }
+
+/* 게스트 로그인 섹션 */
+.guest-login-section {
+  margin-top: 24px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider span {
+  padding: 0 12px;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.btn-guest {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: transparent;
+  color: #aaa;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-guest:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.guest-hint {
+  text-align: center;
+  color: #555;
+  font-size: 0.8rem;
+  margin: 10px 0 0 0;
+}

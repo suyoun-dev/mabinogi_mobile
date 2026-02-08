@@ -6,7 +6,7 @@ import './LoginPage.css';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { login, loginAsGuest, register } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [code, setCode] = useState('');
   const [nickname, setNickname] = useState('');
@@ -101,6 +101,11 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const handleGuestLogin = () => {
+    loginAsGuest();
+    navigate('/');
+  };
+
   const handleCloseModal = () => {
     setShowCodeModal(false);
     navigate('/');
@@ -181,6 +186,22 @@ const LoginPage: React.FC = () => {
             </p>
           </form>
         )}
+
+        <div className="guest-login-section">
+          <div className="divider">
+            <span>또는</span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-guest"
+            onClick={handleGuestLogin}
+          >
+            게스트로 둘러보기
+          </button>
+          <p className="guest-hint">
+            게스트는 일정 조회만 가능합니다.
+          </p>
+        </div>
       </div>
 
       {/* 코드 발급 모달 */}

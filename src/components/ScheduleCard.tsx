@@ -52,7 +52,7 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
   availableCharacters,
 }) => {
   const { selectedCharacter } = useUser();
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const [showJobSelect, setShowJobSelect] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showAddMember, setShowAddMember] = useState(false);
@@ -724,8 +724,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
       )}
 
       <div className="schedule-actions">
-        {/* 복사 버튼 - 모든 사용자 가능 */}
-        {onCopySchedule && (
+        {/* 복사 버튼 - 회원 사용자만 가능 */}
+        {onCopySchedule && !isGuest && (
           <div className="copy-btn-container">
             <button
               className="btn btn-outline"
@@ -801,6 +801,8 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
               <span className="admin-badge">관리자</span>
             )}
           </>
+        ) : isGuest ? (
+          <p className="no-character-msg">게스트는 일정 조회만 가능합니다</p>
         ) : !selectedCharacter ? (
           <p className="no-character-msg">캐릭터를 먼저 등록해주세요</p>
         ) : isMember || isLeaderByNickname ? (

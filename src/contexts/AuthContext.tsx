@@ -6,8 +6,10 @@ interface AuthContextType {
   user: UserAccount | null;
   isLoggedIn: boolean;
   isAdmin: boolean;
+  isGuest: boolean;
   loading: boolean;
   login: (code: string) => Promise<UserAccount | null>;
+  loginAsGuest: () => void;
   logout: () => void;
   register: (nickname: string) => Promise<UserAccount>;
   refreshUser: () => Promise<void>;
@@ -23,6 +25,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const storedUser = authService.getAuthFromLocal();
     if (storedUser) {
+      // 게스트는 서버 확인 불필요
+      if (storedUser.role === 'guest') {
+        setUser(storedUser);
+        setLoading(false);
+        return;
+      }
       // 서버에서 최신 정보 확인
       authService.getUserById(storedUser.id).then((serverUser) => {
         if (serverUser) {
@@ -46,6 +54,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authService.saveAuthToLocal(loggedInUser);
     }
     return loggedInUser;
+  }, []);
+
+  const loginAsGuest = useCallback(() => {
+    const guestUser = authService.createGuestUser();
+    setUser(guestUser);
+    authService.saveAuthToLocal(guestUser);
   }, []);
 
   const logout = useCallback(() => {
@@ -76,8 +90,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isLoggedIn: !!user,
         isAdmin: authService.isAdmin(user),
+        isGuest: authService.isGuest(user),
         loading,
         login,
+        loginAsGuest,
         logout,
         register,
         refreshUser,
