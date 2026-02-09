@@ -321,83 +321,87 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
 
       <h3 className="schedule-title">{schedule.title}</h3>
 
-      <div className="schedule-info">
-        <div className="leader-info">
-          <span className="label">파티장</span>
-          <span className={`value ${isLeaderByNickname ? 'my-nickname' : ''}`}>
-            {editingLeaderNickname && canEdit && onUpdateLeaderNickname ? (
-              <span className="nickname-edit-container">
-                <input
-                  type="text"
-                  className="nickname-edit-input"
-                  value={leaderNicknameInput}
-                  onChange={(e) => setLeaderNicknameInput(e.target.value)}
-                  placeholder="새 닉네임"
-                  maxLength={20}
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleUpdateLeaderNickname();
-                    if (e.key === 'Escape') {
-                      setEditingLeaderNickname(false);
-                      setLeaderNicknameInput('');
-                    }
-                  }}
-                />
-                <button
-                  className="nickname-edit-btn save"
-                  onClick={handleUpdateLeaderNickname}
-                  disabled={loading}
-                >
-                  ✓
-                </button>
-                <button
-                  className="nickname-edit-btn cancel"
-                  onClick={() => {
+      {/* 파티장 강조 표시 */}
+      <div className={`leader-highlight ${isLeaderByNickname ? 'my-leader' : ''}`}>
+        <span className="leader-icon">👤</span>
+        <span className="leader-name">
+          {editingLeaderNickname && canEdit && onUpdateLeaderNickname ? (
+            <span className="nickname-edit-container">
+              <input
+                type="text"
+                className="nickname-edit-input"
+                value={leaderNicknameInput}
+                onChange={(e) => setLeaderNicknameInput(e.target.value)}
+                placeholder="새 닉네임"
+                maxLength={20}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleUpdateLeaderNickname();
+                  if (e.key === 'Escape') {
                     setEditingLeaderNickname(false);
                     setLeaderNicknameInput('');
-                  }}
-                >
-                  ✕
-                </button>
-              </span>
-            ) : (
-              <span
-                className={canEdit && onUpdateLeaderNickname ? 'editable-nickname' : ''}
-                onClick={() => {
-                  if (canEdit && onUpdateLeaderNickname) {
-                    setLeaderNicknameInput(schedule.leaderNickname.split(' (')[0]);
-                    setEditingLeaderNickname(true);
                   }
                 }}
-                title={canEdit && onUpdateLeaderNickname ? '클릭하여 닉네임 변경' : ''}
+              />
+              <button
+                className="nickname-edit-btn save"
+                onClick={handleUpdateLeaderNickname}
+                disabled={loading}
               >
-                {highlightText(schedule.leaderNickname.split(' (')[0])}
-              </span>
-            )}
-            {editingLeaderJob && canEdit && onUpdateLeaderJob ? (
-              <select
-                className="job-edit-select"
-                value={schedule.leaderJob || '미정'}
-                onChange={(e) => handleUpdateLeaderJob(e.target.value as JobClass)}
-                autoFocus
-                onBlur={() => setEditingLeaderJob(false)}
+                ✓
+              </button>
+              <button
+                className="nickname-edit-btn cancel"
+                onClick={() => {
+                  setEditingLeaderNickname(false);
+                  setLeaderNicknameInput('');
+                }}
               >
-                <option value="미정">미정</option>
-                {JOB_LIST.map((job) => (
-                  <option key={job} value={job}>{job}</option>
-                ))}
-              </select>
-            ) : (
-              <small
-                className={canEdit && onUpdateLeaderJob ? 'editable-job' : ''}
-                onClick={() => canEdit && onUpdateLeaderJob && setEditingLeaderJob(true)}
-                title={canEdit && onUpdateLeaderJob ? '클릭하여 직업 변경' : ''}
-              >
-                ({schedule.leaderJob || '미정'})
-              </small>
-            )}
-          </span>
-        </div>
+                ✕
+              </button>
+            </span>
+          ) : (
+            <span
+              className={canEdit && onUpdateLeaderNickname ? 'editable-nickname' : ''}
+              onClick={() => {
+                if (canEdit && onUpdateLeaderNickname) {
+                  setLeaderNicknameInput(schedule.leaderNickname.split(' (')[0]);
+                  setEditingLeaderNickname(true);
+                }
+              }}
+              title={canEdit && onUpdateLeaderNickname ? '클릭하여 닉네임 변경' : ''}
+            >
+              {highlightText(schedule.leaderNickname.split(' (')[0])}
+            </span>
+          )}
+        </span>
+        <span className="leader-job">
+          {editingLeaderJob && canEdit && onUpdateLeaderJob ? (
+            <select
+              className="job-edit-select"
+              value={schedule.leaderJob || '미정'}
+              onChange={(e) => handleUpdateLeaderJob(e.target.value as JobClass)}
+              autoFocus
+              onBlur={() => setEditingLeaderJob(false)}
+            >
+              <option value="미정">미정</option>
+              {JOB_LIST.map((job) => (
+                <option key={job} value={job}>{job}</option>
+              ))}
+            </select>
+          ) : (
+            <span
+              className={canEdit && onUpdateLeaderJob ? 'editable-job' : ''}
+              onClick={() => canEdit && onUpdateLeaderJob && setEditingLeaderJob(true)}
+              title={canEdit && onUpdateLeaderJob ? '클릭하여 직업 변경' : ''}
+            >
+              {schedule.leaderJob || '미정'}
+            </span>
+          )}
+        </span>
+      </div>
+
+      <div className="schedule-info">
         <div className="member-count">
           <span className="label">인원</span>
           <span className={`value ${isFull ? 'full' : ''}`}>
