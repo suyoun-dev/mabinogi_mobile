@@ -492,19 +492,28 @@ const HomePage: React.FC = () => {
                 <th>파티장</th>
                 <th>직업</th>
                 <th>인원</th>
+                <th>상태</th>
               </tr>
             </thead>
             <tbody>
-              {filteredSchedules.map((schedule) => (
-                <tr key={schedule.id}>
-                  <td>{format(new Date(schedule.date), 'M/d')} {schedule.time}</td>
-                  <td>{schedule.contentName}</td>
-                  <td>{schedule.difficulty}</td>
-                  <td>{schedule.leaderNickname.split(' (')[0]}</td>
-                  <td>{getSearchedUserJob(schedule, searchNickname)}</td>
-                  <td>{(schedule.members?.length || 0) + 1}/{schedule.maxMembers}</td>
-                </tr>
-              ))}
+              {filteredSchedules.map((schedule) => {
+                const currentCount = (schedule.members?.length || 0) + 1;
+                const isFull = currentCount >= schedule.maxMembers;
+                const isPastSchedule = new Date(`${schedule.date}T${schedule.time}`) < new Date();
+                const status = isPastSchedule ? '종료' : schedule.isClosed ? '마감' : isFull ? '인원마감' : '모집중';
+
+                return (
+                  <tr key={schedule.id}>
+                    <td>{format(new Date(schedule.date), 'M/d')} {schedule.time}</td>
+                    <td>{schedule.contentName}</td>
+                    <td>{schedule.difficulty}</td>
+                    <td>{schedule.leaderNickname.split(' (')[0]}</td>
+                    <td>{getSearchedUserJob(schedule, searchNickname)}</td>
+                    <td>{currentCount}/{schedule.maxMembers}</td>
+                    <td>{status}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
