@@ -218,6 +218,49 @@ const HomePage: React.FC = () => {
     }
   };
 
+  // 표 보기 이미지로 저장
+  const handleSaveTableImage = async () => {
+    if (filteredSchedules.length === 0) {
+      alert('저장할 일정이 없습니다.');
+      return;
+    }
+
+    setSavingImage(true);
+
+    try {
+      // 내보내기용 테이블 표시
+      setShowExportTable(true);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      if (!exportTableRef.current) {
+        setShowExportTable(false);
+        setSavingImage(false);
+        return;
+      }
+
+      const canvas = await html2canvas(exportTableRef.current, {
+        backgroundColor: '#0F3360',
+        scale: 2,
+      });
+
+      setShowExportTable(false);
+
+      const link = document.createElement('a');
+      const prefix = searchNickname.trim() || '전체';
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+      link.download = `마비노기_${prefix}_일정_${dateStr}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (error) {
+      alert('이미지 저장에 실패했습니다.');
+      console.error(error);
+    } finally {
+      setSavingImage(false);
+      setShowExportTable(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="page loading">
@@ -327,6 +370,14 @@ const HomePage: React.FC = () => {
             title="엑셀로 다운로드"
           >
             엑셀
+          </button>
+          <button
+            className="btn-image-export"
+            onClick={handleSaveTableImage}
+            disabled={savingImage}
+            title="이미지로 다운로드"
+          >
+            {savingImage ? '저장중...' : '이미지'}
           </button>
         </div>
       </div>
