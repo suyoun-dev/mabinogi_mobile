@@ -140,61 +140,43 @@
   border-radius: 2px;
 }
 
+/* 제목 행 (파티장 태그 + 제목) */
+.schedule-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.leader-tag {
+  background: linear-gradient(135deg, #FF8E8E 0%, #d07070 100%);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.leader-tag.my-leader {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  color: #000;
+}
+
 .schedule-title {
   font-size: 1.1rem;
   font-weight: 600;
   color: #fff;
-  margin: 0 0 10px 0;
-}
-
-/* 파티장 강조 표시 */
-.leader-highlight {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, rgba(255, 142, 142, 0.15) 0%, rgba(208, 112, 112, 0.1) 100%);
-  border: 1px solid rgba(255, 142, 142, 0.3);
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 12px;
-}
-
-.leader-highlight.my-leader {
-  background: linear-gradient(135deg, rgba(255, 142, 142, 0.25) 0%, rgba(208, 112, 112, 0.2) 100%);
-  border-color: rgba(255, 142, 142, 0.5);
-}
-
-.leader-icon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.leader-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #FF8E8E;
+  margin: 0;
   flex: 1;
 }
 
-.leader-highlight.my-leader .leader-name {
-  color: #fff;
-}
-
-.leader-job {
-  font-size: 0.85rem;
-  color: #aaa;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-.leader-job .editable-job {
-  cursor: pointer;
-  color: #ffc107;
-}
-
-.leader-job .editable-job:hover {
-  color: #fff;
+/* 파티장 직업 정보 */
+.leader-job-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .schedule-info {

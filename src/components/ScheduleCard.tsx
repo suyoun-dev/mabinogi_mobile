@@ -319,20 +319,16 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
         <span className="time">{schedule.time}</span>
       </div>
 
-      <h3 className="schedule-title">{schedule.title}</h3>
-
-      {/* 파티장 강조 표시 */}
-      <div className={`leader-highlight ${isLeaderByNickname ? 'my-leader' : ''}`}>
-        <span className="leader-icon">👤</span>
-        <span className="leader-name">
+      <div className="schedule-title-row">
+        <span className={`leader-tag ${isLeaderByNickname ? 'my-leader' : ''}`}>
           {editingLeaderNickname && canEdit && onUpdateLeaderNickname ? (
             <span className="nickname-edit-container">
               <input
                 type="text"
-                className="nickname-edit-input"
+                className="nickname-edit-input small"
                 value={leaderNicknameInput}
                 onChange={(e) => setLeaderNicknameInput(e.target.value)}
-                placeholder="새 닉네임"
+                placeholder="닉네임"
                 maxLength={20}
                 autoFocus
                 onKeyDown={(e) => {
@@ -344,14 +340,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 }}
               />
               <button
-                className="nickname-edit-btn save"
+                className="nickname-edit-btn save small"
                 onClick={handleUpdateLeaderNickname}
                 disabled={loading}
               >
                 ✓
               </button>
               <button
-                className="nickname-edit-btn cancel"
+                className="nickname-edit-btn cancel small"
                 onClick={() => {
                   setEditingLeaderNickname(false);
                   setLeaderNicknameInput('');
@@ -375,7 +371,12 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
             </span>
           )}
         </span>
-        <span className="leader-job">
+        <h3 className="schedule-title">{schedule.title}</h3>
+      </div>
+
+      <div className="schedule-info">
+        <div className="leader-job-info">
+          <span className="label">직업</span>
           {editingLeaderJob && canEdit && onUpdateLeaderJob ? (
             <select
               className="job-edit-select"
@@ -391,17 +392,14 @@ const ScheduleCard: React.FC<ScheduleCardProps> = ({
             </select>
           ) : (
             <span
-              className={canEdit && onUpdateLeaderJob ? 'editable-job' : ''}
+              className={`value ${canEdit && onUpdateLeaderJob ? 'editable-job' : ''}`}
               onClick={() => canEdit && onUpdateLeaderJob && setEditingLeaderJob(true)}
               title={canEdit && onUpdateLeaderJob ? '클릭하여 직업 변경' : ''}
             >
               {schedule.leaderJob || '미정'}
             </span>
           )}
-        </span>
-      </div>
-
-      <div className="schedule-info">
+        </div>
         <div className="member-count">
           <span className="label">인원</span>
           <span className={`value ${isFull ? 'full' : ''}`}>
