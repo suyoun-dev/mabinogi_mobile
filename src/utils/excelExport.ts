@@ -33,6 +33,7 @@ interface ExcelRow {
 export const exportSchedulesToExcel = (schedules: Schedule[], filename?: string) => {
   // 일정 데이터를 엑셀 형식으로 변환
   const data: ExcelRow[] = schedules.map((schedule) => {
+    const members = schedule.members || [];
     const row: ExcelRow = {
       날짜: schedule.date,
       시간: schedule.time,
@@ -57,13 +58,13 @@ export const exportSchedulesToExcel = (schedules: Schedule[], filename?: string)
       멤버7: '',
       멤버7직업: '',
       최대인원: schedule.maxMembers,
-      현재인원: schedule.members.length + 1, // 파티장 포함
+      현재인원: members.length + 1, // 파티장 포함
       마감여부: schedule.isClosed ? '마감' : '모집중',
-      비고: schedule.note,
+      비고: schedule.note || '',
     };
 
     // 멤버 정보 추가
-    schedule.members.forEach((member, index) => {
+    members.forEach((member, index) => {
       const memberKey = `멤버${index + 1}` as keyof ExcelRow;
       const jobKey = `멤버${index + 1}직업` as keyof ExcelRow;
       (row[memberKey] as string) = member.nickname;
