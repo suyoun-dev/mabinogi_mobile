@@ -411,15 +411,13 @@ const HomePage: React.FC = () => {
         </div>
       ) : (
         <div className="schedule-table-container">
-          <table className="schedule-table">
+          <table className="schedule-table schedule-table-expanded">
             <thead>
               <tr>
                 <th>날짜</th>
                 <th>시간</th>
                 <th>컨텐츠</th>
                 <th>난이도</th>
-                <th>제목</th>
-                <th>파티장</th>
                 <th>인원</th>
                 <th>상태</th>
               </tr>
@@ -430,42 +428,59 @@ const HomePage: React.FC = () => {
                 const isFull = currentCount >= schedule.maxMembers;
                 const isPastSchedule = new Date(`${schedule.date}T${schedule.time}`) < new Date();
 
+                // 파티장 + 파티원 목록 생성
+                const leaderName = schedule.leaderNickname.split(' (')[0];
+                const memberNames = schedule.members?.map(m => m.nickname) || [];
+                const allMembers = [leaderName, ...memberNames];
+
                 return (
-                  <tr
-                    key={schedule.id}
-                    className={`${schedule.isClosed ? 'closed' : ''} ${isPastSchedule ? 'past' : ''}`}
-                    onClick={() => setViewMode('card')}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <td>{format(new Date(schedule.date), 'M/d (E)', { locale: ko })}</td>
-                    <td>{schedule.time}</td>
-                    <td>
-                      <span className={`content-badge ${schedule.type}`}>
-                        {schedule.contentName}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`difficulty-badge ${schedule.difficulty}`}>
-                        {schedule.difficulty}
-                      </span>
-                    </td>
-                    <td className="title-cell">{schedule.title}</td>
-                    <td>{schedule.leaderNickname.split(' (')[0]}</td>
-                    <td className={isFull ? 'full' : ''}>
-                      {currentCount}/{schedule.maxMembers}
-                    </td>
-                    <td>
-                      {isPastSchedule ? (
-                        <span className="status-badge past">종료</span>
-                      ) : schedule.isClosed ? (
-                        <span className="status-badge closed">마감</span>
-                      ) : isFull ? (
-                        <span className="status-badge full">인원마감</span>
-                      ) : (
-                        <span className="status-badge open">모집중</span>
-                      )}
-                    </td>
-                  </tr>
+                  <React.Fragment key={schedule.id}>
+                    <tr
+                      className={`table-row-main ${schedule.isClosed ? 'closed' : ''} ${isPastSchedule ? 'past' : ''}`}
+                      onClick={() => setViewMode('card')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <td>{format(new Date(schedule.date), 'M/d (E)', { locale: ko })}</td>
+                      <td>{schedule.time}</td>
+                      <td>
+                        <span className={`content-badge ${schedule.type}`}>
+                          {schedule.contentName}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`difficulty-badge ${schedule.difficulty}`}>
+                          {schedule.difficulty}
+                        </span>
+                      </td>
+                      <td className={isFull ? 'full' : ''}>
+                        {currentCount}/{schedule.maxMembers}
+                      </td>
+                      <td>
+                        {isPastSchedule ? (
+                          <span className="status-badge past">종료</span>
+                        ) : schedule.isClosed ? (
+                          <span className="status-badge closed">마감</span>
+                        ) : isFull ? (
+                          <span className="status-badge full">인원마감</span>
+                        ) : (
+                          <span className="status-badge open">모집중</span>
+                        )}
+                      </td>
+                    </tr>
+                    <tr
+                      className={`table-row-detail ${schedule.isClosed ? 'closed' : ''} ${isPastSchedule ? 'past' : ''}`}
+                      onClick={() => setViewMode('card')}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <td colSpan={6} className="members-cell">
+                        <span className="schedule-title">{schedule.title}</span>
+                        <span className="members-list">
+                          <span className="members-icon">👤</span>
+                          {allMembers.join(', ')}
+                        </span>
+                      </td>
+                    </tr>
+                  </React.Fragment>
                 );
               })}
             </tbody>

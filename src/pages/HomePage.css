@@ -491,3 +491,51 @@
 .btn-image-export:active:not(:disabled) {
   transform: translateY(0);
 }
+
+/* 확장형 테이블 (2줄 구조) */
+.schedule-table-expanded {
+  min-width: 500px;
+}
+
+.schedule-table-expanded .table-row-main td {
+  border-bottom: none;
+  padding-bottom: 4px;
+}
+
+.schedule-table-expanded .table-row-detail td {
+  padding-top: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.schedule-table-expanded .table-row-main:hover,
+.schedule-table-expanded .table-row-main:hover + .table-row-detail,
+.schedule-table-expanded .table-row-detail:hover,
+.schedule-table-expanded .table-row-detail:hover ~ .table-row-main {
+  background: rgba(255, 142, 142, 0.1);
+}
+
+.schedule-table-expanded .members-cell {
+  text-align: left;
+  padding-left: 12px;
+}
+
+.schedule-table-expanded .schedule-title {
+  font-weight: 600;
+  color: #FF8E8E;
+  margin-right: 12px;
+}
+
+.schedule-table-expanded .members-list {
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+.schedule-table-expanded .members-icon {
+  margin-right: 4px;
+}
+
+.schedule-table-expanded .table-row-detail.past .members-list,
+.schedule-table-expanded .table-row-detail.past .schedule-title {
+  opacity: 0.6;
+}
