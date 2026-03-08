@@ -498,14 +498,13 @@ const HomePage: React.FC = () => {
             )}
             <p className="export-date">{format(new Date(), 'yyyy년 M월 d일 (E)', { locale: ko })}</p>
           </div>
-          <table className="export-table">
+          <table className="export-table export-table-expanded">
             <thead>
               <tr>
-                <th>날짜/시간</th>
+                <th>날짜</th>
+                <th>시간</th>
                 <th>컨텐츠</th>
                 <th>난이도</th>
-                <th>파티장</th>
-                <th>직업</th>
                 <th>인원</th>
                 <th>상태</th>
               </tr>
@@ -517,16 +516,28 @@ const HomePage: React.FC = () => {
                 const isPastSchedule = new Date(`${schedule.date}T${schedule.time}`) < new Date();
                 const status = isPastSchedule ? '종료' : schedule.isClosed ? '마감' : isFull ? '인원마감' : '모집중';
 
+                // 파티장 + 파티원 목록 생성
+                const leaderName = schedule.leaderNickname.split(' (')[0];
+                const memberNames = schedule.members?.map(m => m.nickname) || [];
+                const allMembers = [leaderName, ...memberNames];
+
                 return (
-                  <tr key={schedule.id}>
-                    <td>{format(new Date(schedule.date), 'M/d')} {schedule.time}</td>
-                    <td>{schedule.contentName}</td>
-                    <td>{schedule.difficulty}</td>
-                    <td>{schedule.leaderNickname.split(' (')[0]}</td>
-                    <td>{getSearchedUserJob(schedule, searchNickname)}</td>
-                    <td>{currentCount}/{schedule.maxMembers}</td>
-                    <td>{status}</td>
-                  </tr>
+                  <React.Fragment key={schedule.id}>
+                    <tr className={`export-row-main ${schedule.isClosed ? 'closed' : ''} ${isPastSchedule ? 'past' : ''}`}>
+                      <td>{format(new Date(schedule.date), 'M/d (E)', { locale: ko })}</td>
+                      <td>{schedule.time}</td>
+                      <td>{schedule.contentName}</td>
+                      <td>{schedule.difficulty}</td>
+                      <td>{currentCount}/{schedule.maxMembers}</td>
+                      <td>{status}</td>
+                    </tr>
+                    <tr className={`export-row-detail ${schedule.isClosed ? 'closed' : ''} ${isPastSchedule ? 'past' : ''}`}>
+                      <td colSpan={6} className="export-members-cell">
+                        <span className="export-title">{schedule.title}</span>
+                        <span className="export-members">👤 {allMembers.join(', ')}</span>
+                      </td>
+                    </tr>
+                  </React.Fragment>
                 );
               })}
             </tbody>

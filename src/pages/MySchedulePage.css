@@ -126,3 +126,40 @@
 .export-table tbody tr:nth-child(even) {
   background: rgba(255, 255, 255, 0.03);
 }
+
+/* 내보내기 테이블 확장형 (2줄 구조) */
+.export-table-expanded {
+  min-width: 500px;
+}
+
+.export-table-expanded .export-row-main td {
+  border-bottom: none;
+  padding-bottom: 4px;
+}
+
+.export-table-expanded .export-row-detail td {
+  padding-top: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.export-table-expanded .export-members-cell {
+  text-align: left;
+  padding-left: 12px;
+}
+
+.export-table-expanded .export-title {
+  font-weight: 600;
+  color: #FF8E8E;
+  margin-right: 12px;
+}
+
+.export-table-expanded .export-members {
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+.export-table-expanded .export-row-main.past,
+.export-table-expanded .export-row-detail.past {
+  opacity: 0.6;
+}
